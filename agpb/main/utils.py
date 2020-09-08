@@ -1,6 +1,8 @@
+import os
+
 from agpb import db
 
-from agpb.models import Category
+from agpb.models import Category, Language
 
 
 def commit_changes_to_db(data=None):
@@ -37,3 +39,18 @@ def get_category_data():
             category_data.append(category_data_entry)
         categories_data['categories'] = category_data
     return categories_data
+
+
+def get_language_data():
+    languages_data = {}
+    language_data = []
+    languages = Language.query.all()
+    if languages is not None:
+        for language in languages:
+            language_data_entry = {}
+            language_data_entry['id'] = language.id
+            language_data_entry['label'] = language.label
+            language_data_entry['lang_code'] = language.lang_code
+            language_data.append(language_data_entry)
+        languages_data['data'] = language_data
+    return languages_data

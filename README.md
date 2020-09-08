@@ -24,3 +24,29 @@ SQLALCHEMY_POOL_RECYCLE: 90
 
 ```
 4. Run the project  with `python app.py`
+
+## Extracting data into database
+1. Run the followin on python command line
+```
+>>> from agpb import db
+>>> from agpb.db.extract_data import extract_category_data, naviagate_folder, extract_languages
+```
+
+2. To get category data use run the following
+```
+>>> cat_data = extract_category_data('path/to/category_list.csv')
+```
+
+3. To extract the languages, run the following
+```
+>>> folder_list = naviagate_folder('/Path/to/content_folder')
+>>> lang_data = extract_languages(folder_list)
+```
+
+4. Inserting the data into the database requires adding them into session first then commiting
+by running the following
+```
+    >>> for data in cat_data:
+    ...     db.session.add(data)
+    >>> db.session.commit()
+```

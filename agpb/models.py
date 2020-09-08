@@ -24,7 +24,7 @@ class Language(db.Model):
 
     def __repr__(self):
         # This is what is shown when object is printed
-        return "Language({}, {}, {}, {}, {})".format(
+        return "Language({}, {}, {}, {})".format(
                self.label,
                self.lang_code,
                self.country_code,

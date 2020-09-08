@@ -32,3 +32,23 @@ def write_data(data):
         print('Something is Wrong:(')
     else:
         print('Data Added!', file=sys.stderr)
+
+
+def naviagate_folder(folder):
+    folder_content = os.listdir(folder)
+    return folder_content
+
+
+def get_country_code(language):
+    pass
+
+def extract_languages(folder_dir_list):
+    languages = []
+    for folder in folder_dir_list:
+        
+        language = {}
+        language['label'] = folder.split('_')[1]
+        language['lang_code'] = folder.split('_')[0]
+        languages.append(language)
+    languages = [ Language(label=lang['label'], lang_code=lang['lang_code']) for lang in languages]
+    return languages
