@@ -2,3 +2,4 @@
 agpb/config.yaml
 agpb/main/__pycache__/*
 agpb/__pycache__/*
+agpb/main/db/category_list.csv
