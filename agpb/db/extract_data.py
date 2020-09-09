@@ -39,9 +39,6 @@ def naviagate_folder(folder):
     return folder_content
 
 
-def get_country_code(language):
-    pass
-
 def extract_languages(folder_dir_list):
     languages = []
     for folder in folder_dir_list:
