@@ -4,7 +4,7 @@ import json
 
 from flask import Blueprint, request
 
-from agpb.main.utils import get_category_data, get_language_data
+from agpb.main.utils import get_category_data, get_language_data, get_translation_data
 
 main = Blueprint('main', __name__)
 
@@ -37,3 +37,16 @@ def getLanguages():
         return language_data
     else:
         return '<h2> Unable to get Category data at the moment</h2>'
+
+@main.route('/api/v1/translations')
+def getTranslations():
+    '''
+    Get translations by category
+    '''
+    category_number = int(request.args.get('category'))
+    language_code = request.args.get('lang_code')
+    translation_data = get_translation_data(category_number, language_code)
+    if translation_data:
+        return translation_data
+    else:
+        return '<h2> Unable to get Translation data at the moment</h2>'

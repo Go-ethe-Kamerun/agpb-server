@@ -35,6 +35,8 @@ class Text(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     label = db.Column(db.Text)
     category_id = db.Column(db.Integer)
+    language_id = db.Column(db.Integer)
+    translation_id = db.Column(db.Integer)
 
     def __repr__(self):
         # This is what is shown when object is printed

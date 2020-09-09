@@ -1,13 +1,14 @@
-Ester Kontakt
-Sich verabreden
-Zahlen
-Wochentage
-Monate
-Uhrzeiten
-Wetter
-Bitten und danken
-Nach dem Weg fragen
-Im Restaurant
-Einkaufen
-Die Gesundheit
-Sonstiges
+No,Category,Range
+1,Ester Kontakt,1-14
+2,Sich verabreden,15-17
+3,Zahlen,17-50
+4,Wochentage,51-57
+5,Monate,58-69
+6,Uhrzeiten,70-76
+7,Wetter,77-82
+8,Bitten und danken,83-88
+9,Nach dem Weg fragen,89-98
+10,Im Restaurant,99-127
+11,Einkaufen,128-133
+12,Die Gesundheit,134-142
+13,Sonstiges,143-150
