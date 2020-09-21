@@ -76,6 +76,7 @@ def get_translation_data(category_number, language_code):
     for text in texts:
         translation_entry = {}
         if text.language_id == language.id:
+            translation_entry['id'] = text.translation_id
             translation_entry['text'] = text.label.replace('"', '')
             translation_entry['audio_id'] = make_audio_id(text.translation_id, language.lang_code)
             translations.append(translation_entry)
