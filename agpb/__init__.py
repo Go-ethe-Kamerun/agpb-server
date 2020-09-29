@@ -15,6 +15,7 @@ app.config.update(
 app.config['SQLALCHEMY_DATABASE_URI']
 app.config['SECRET_KEY']
 app.config['TEMPLATES_AUTO_RELOAD']
+app.config['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
 
 db = SQLAlchemy(app)
 

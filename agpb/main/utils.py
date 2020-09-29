@@ -1,7 +1,10 @@
 import os
+import shutil
 import sys
 import json
 
+from agpb import app
+from flask import send_file
 from agpb import db
 
 from agpb.models import Category, Language, Text
@@ -60,11 +63,29 @@ def get_language_data():
 
 def make_audio_id(translation_id, lang_code):
     if translation_id < 10:
-        return 'cm_'+lang_code + '_00' + str(translation_id) + '.mp3'
+        return "require('./cm_"+lang_code + "_00" + str(translation_id) + ".mp3')"
     elif translation_id >= 10 and translation_id <= 99:
-        return 'cm_' + lang_code + '_0' + str(translation_id) + '.mp3'
+        return "require('./cm_"+lang_code + "_0" + str(translation_id) + ".mp3')"
     else:
-        return 'cm_'+lang_code + '_' +str(translation_id) + '.mp3'
+        return "require('./cm_"+lang_code + "_" + str(translation_id) + ".mp3')"
+
+def create_translation_text_file(trans_text, lang_code):
+    root_dir = './agpb/db/data/trans/cm_' + lang_code
+    file_name = root_dir + "/cm_" + lang_code + ".js"
+
+    # Remove old file in case of update
+    if os.path.isfile(file_name):
+        os.remove(file_name)
+
+    with open(file_name, 'a') as file:
+        file.write(trans_text.strip())
+
+    return root_dir
+
+
+def create_zip_file(directory):
+    shutil.make_archive(directory, 'zip', directory)
+    return directory.split('/')[-1]
 
 def get_translation_data(category_number, language_code):
     translation_data = {}
@@ -76,9 +97,18 @@ def get_translation_data(category_number, language_code):
     for text in texts:
         translation_entry = {}
         if text.language_id == language.id:
-            translation_entry['id'] = text.translation_id
+            translation_entry['No'] = text.translation_id
             translation_entry['text'] = text.label.replace('"', '')
-            translation_entry['audio_id'] = make_audio_id(text.translation_id, language.lang_code)
+            translation_entry['audio'] = make_audio_id(text.translation_id,
+                                                        language.lang_code)
             translations.append(translation_entry)
-    translation_data['translations'] = translations
-    return translation_data
+
+    # translation_data['export default'] = translations
+    translations = "export default " + str(translations) + "\n"
+    trans_directory = create_translation_text_file(translations.replace('"', ''),
+                                                    language.lang_code)
+    # create zip of the directory
+    zip_file = create_zip_file(trans_directory)
+
+    # Send a Zip file of the content to the user
+    return send_file(app.config['UPLOADS'] + zip_file + '.zip', as_attachment=True)
