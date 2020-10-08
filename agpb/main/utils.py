@@ -87,21 +87,21 @@ def create_zip_file(directory):
     shutil.make_archive(directory, 'zip', directory)
     return directory.split('/')[-1]
 
-def get_translation_data(category_number, language_code):
+def get_translation_data(language_code):
     translation_data = {}
     translations = []
     language = Language.query.filter_by(lang_code=language_code).first()
-    category_id = Category.query.filter_by(id=category_number).first().id
-    texts = Text.query.filter_by(category_id=category_id).all()
+    # category_id = Category.query.filter_by(id=category_number).first().id
+    texts = Text.query.filter_by(language_id=language.id).all()
     # filter text in particular language
     for text in texts:
         translation_entry = {}
-        if text.language_id == language.id:
-            translation_entry['No'] = text.translation_id
-            translation_entry['text'] = text.label.replace('"', '')
-            translation_entry['audio'] = make_audio_id(text.translation_id,
-                                                        language.lang_code)
-            translations.append(translation_entry)
+        translation_entry['No'] = text.translation_id
+        translation_entry['text'] = text.label.replace('"', '')
+        translation_entry['category'] = text.category_id
+        translation_entry['audio'] = make_audio_id(text.translation_id,
+                                                    language.lang_code)
+        translations.append(translation_entry)
 
     # translation_data['export default'] = translations
     translations = "export default " + str(translations) + "\n"

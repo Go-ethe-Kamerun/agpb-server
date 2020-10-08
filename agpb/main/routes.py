@@ -43,9 +43,9 @@ def getTranslations():
     '''
     Get translations by category
     '''
-    category_number = int(request.args.get('category'))
+    # category_number = int(request.args.get('category'))
     language_code = request.args.get('lang_code')
-    translation_data = get_translation_data(category_number, language_code)
+    translation_data = get_translation_data(language_code)
     if translation_data:
         return translation_data
     else:
