@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import json
+import unicodedata
 
 from agpb import app
 from flask import send_file
@@ -97,8 +98,11 @@ def get_translation_data(language_code):
     for text in texts:
         translation_entry = {}
         translation_entry['No'] = text.translation_id
-        translation_entry['text'] = text.label.replace('"', '')
-        translation_entry['category'] = text.category_id
+        translation_entry['text'] = unicodedata.normalize("NFKD", text.label.replace('"', ''))
+        if text.category_id is None:
+            translation_entry['category'] = 'none'
+        else:
+            translation_entry['category'] = Category.query.filter_by(id=text.category_id).first().label
         translation_entry['audio'] = make_audio_id(text.translation_id,
                                                     language.lang_code)
         translations.append(translation_entry)
