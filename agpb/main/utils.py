@@ -113,7 +113,7 @@ def get_translation_data(language_code):
     # filter text in particular language
     for text in texts:
         translation_entry = {}
-        translation_entry['No'] = text.translation_id
+        translation_entry['No'] = str(text.translation_id)
         translation_entry['text'] = convert_encoded_text(text.label)
         if text.category_id is None:
             translation_entry['category'] = 'none'
