@@ -63,16 +63,26 @@ def get_language_data():
 
 
 def make_audio_id(translation_id, lang_code):
+    coountry_ext = 'cm'
+
+    if lang_code == 'de':
+        coountry_ext = 'de'
+
     if translation_id < 10:
-        return "require('./cm_"+lang_code + "_00" + str(translation_id) + ".mp3')"
+        return "require('./" + coountry_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3')"
     elif translation_id >= 10 and translation_id <= 99:
-        return "require('./cm_"+lang_code + "_0" + str(translation_id) + ".mp3')"
+        return "require('./" + coountry_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3')"
     else:
-        return "require('./cm_"+lang_code + "_" + str(translation_id) + ".mp3')"
+        return "require('./" + coountry_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3')"
 
 def create_translation_text_file(trans_text, lang_code):
-    root_dir = './agpb/db/data/trans/cm_' + lang_code
-    file_name = root_dir + "/cm_" + lang_code + ".js"
+    coountry_ext = 'cm'
+
+    if lang_code == 'de':
+        coountry_ext = 'de'
+
+    root_dir = './agpb/db/data/trans/' + coountry_ext + '_' + lang_code
+    file_name = root_dir + "/" +coountry_ext + "_" + lang_code + ".js"
 
     # Remove old file in case of update
     if os.path.isfile(file_name):
@@ -98,7 +108,7 @@ def get_translation_data(language_code):
     for text in texts:
         translation_entry = {}
         translation_entry['No'] = text.translation_id
-        translation_entry['text'] = unicodedata.normalize("NFKD", text.label.replace('"', ''))
+        translation_entry['text'] = unicodedata.normalize("NFKD", text.label.replace("'", " "))
         if text.category_id is None:
             translation_entry['category'] = 'none'
         else:
