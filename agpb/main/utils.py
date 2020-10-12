@@ -69,11 +69,11 @@ def make_audio_id(translation_id, lang_code):
         coountry_ext = 'de'
 
     if translation_id < 10:
-        return "require('./" + coountry_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3')"
+        return coountry_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3"
     elif translation_id >= 10 and translation_id <= 99:
-        return "require('./" + coountry_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3')"
+        return coountry_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3"
     else:
-        return "require('./" + coountry_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3')"
+        return coountry_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3"
 
 def create_translation_text_file(trans_text, lang_code):
     coountry_ext = 'cm'
@@ -82,7 +82,7 @@ def create_translation_text_file(trans_text, lang_code):
         coountry_ext = 'de'
 
     root_dir = './agpb/db/data/trans/' + coountry_ext + '_' + lang_code
-    file_name = root_dir + "/" +coountry_ext + "_" + lang_code + ".js"
+    file_name = root_dir + "/" +coountry_ext + "_" + lang_code + ".json"
 
     # Remove old file in case of update
     if os.path.isfile(file_name):
@@ -98,6 +98,12 @@ def create_zip_file(directory):
     shutil.make_archive(directory, 'zip', directory)
     return directory.split('/')[-1]
 
+
+def convert_encoded_text(text):
+    norm_data = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
+    return norm_data.decode('ascii')
+
+
 def get_translation_data(language_code):
     translation_data = {}
     translations = []
@@ -108,7 +114,7 @@ def get_translation_data(language_code):
     for text in texts:
         translation_entry = {}
         translation_entry['No'] = text.translation_id
-        translation_entry['text'] = unicodedata.normalize("NFKD", text.label.replace("'", " "))
+        translation_entry['text'] = convert_encoded_text(text.label)
         if text.category_id is None:
             translation_entry['category'] = 'none'
         else:
@@ -118,9 +124,8 @@ def get_translation_data(language_code):
         translations.append(translation_entry)
 
     # translation_data['export default'] = translations
-    translations = "export default " + str(translations) + "\n"
-    trans_directory = create_translation_text_file(translations.replace('"', ''),
-                                                    language.lang_code)
+    translations = json.dumps(translations)
+    trans_directory = create_translation_text_file(translations, language.lang_code)
     # create zip of the directory
     zip_file = create_zip_file(trans_directory)
 
