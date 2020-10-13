@@ -49,13 +49,13 @@ def get_category_data():
 
 def build_lang_url(lang_code):
     coountry_ext = 'cm'
-    base_url = request.url.split('/api')[0]
+    ip_address = 'http://3.17.141.122'
     api_route = '/api/v1/translations?lang_code='
 
     if lang_code == 'de':
         coountry_ext = 'de'
 
-    url = base_url + api_route + coountry_ext + '_' + lang_code
+    url = ip_address + api_route + coountry_ext + '_' + lang_code
     return url
 
 
