@@ -5,7 +5,7 @@ import json
 import unicodedata
 
 from agpb import app
-from flask import send_file
+from flask import send_file, request
 from agpb import db
 
 from agpb.models import Category, Language, Text
@@ -47,6 +47,18 @@ def get_category_data():
     return categories_data
 
 
+def build_lang_url(lang_code):
+    coountry_ext = 'cm'
+    base_url = request.url.split('/api')[0]
+    api_route = '/api/v1/translations?lang_code='
+
+    if lang_code == 'de':
+        coountry_ext = 'de'
+
+    url = base_url + api_route + coountry_ext + '_' + lang_code
+    return url
+
+
 def get_language_data():
     languages_data = {}
     language_data = []
@@ -54,9 +66,9 @@ def get_language_data():
     if languages is not None:
         for language in languages:
             language_data_entry = {}
-            language_data_entry['id'] = language.id
-            language_data_entry['label'] = language.label
+            language_data_entry['name'] = language.label
             language_data_entry['lang_code'] = language.lang_code
+            language_data_entry['url'] = build_lang_url(language.lang_code)
             language_data.append(language_data_entry)
         languages_data['data'] = language_data
     return languages_data
