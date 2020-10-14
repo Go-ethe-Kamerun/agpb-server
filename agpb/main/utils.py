@@ -46,6 +46,11 @@ def get_category_data():
         categories_data['categories'] = category_data
     return categories_data
 
+def build_country_lang_code(lang_code):
+    coountry_ext = 'cm'
+    if lang_code == 'de':
+        coountry_ext = 'de'
+    return coountry_ext + '_' + lang_code
 
 def build_lang_url(lang_code):
     coountry_ext = 'cm'
@@ -67,7 +72,7 @@ def get_language_data():
         for language in languages:
             language_data_entry = {}
             language_data_entry['name'] = language.label
-            language_data_entry['lang_code'] = language.lang_code
+            language_data_entry['lang_code'] = build_country_lang_code(language.lang_code)
             language_data_entry['url'] = build_lang_url(language.lang_code)
             language_data.append(language_data_entry)
         languages_data['data'] = language_data
