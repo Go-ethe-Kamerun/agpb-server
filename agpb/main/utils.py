@@ -64,6 +64,15 @@ def build_lang_url(lang_code):
     return url
 
 
+def check_lang_support(lang_code):
+    root_dir = './agpb/db/data/trans/'
+    lang_dirs = os.listdir(root_dir)
+    if lang_code in lang_dirs:
+        return 'true'
+    else:
+        return 'false'
+
+
 def get_language_data():
     languages_data = {}
     language_data = []
@@ -74,6 +83,8 @@ def get_language_data():
             language_data_entry['name'] = language.label
             language_data_entry['lang_code'] = build_country_lang_code(language.lang_code)
             language_data_entry['url'] = build_lang_url(language.lang_code)
+            language_data_entry['supported'] = check_lang_support(build_country_lang_code(
+                                                                    language.lang_code))
             language_data.append(language_data_entry)
         languages_data['data'] = language_data
     return languages_data
