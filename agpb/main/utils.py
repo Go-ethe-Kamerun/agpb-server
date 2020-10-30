@@ -132,7 +132,7 @@ def convert_encoded_text(text):
     return norm_data.decode('ascii')
 
 
-def get_translation_data(language_code):
+def get_translation_data(language_code, return_type):
     translation_data = {}
     translations = []
     language = Language.query.filter_by(lang_code=language_code).first()
@@ -153,9 +153,14 @@ def get_translation_data(language_code):
 
     # translation_data['export default'] = translations
     translations = json.dumps(translations)
-    trans_directory = create_translation_text_file(translations, language.lang_code)
-    # create zip of the directory
-    zip_file = create_zip_file(trans_directory)
+    if return_type == 'json':
+        return translations
+    elif return_type == 'zip':
+        trans_directory = create_translation_text_file(translations, language.lang_code)
+        # create zip of the directory
+        zip_file = create_zip_file(trans_directory)
 
-    # Send a Zip file of the content to the user
-    return send_file(app.config['UPLOADS'] + zip_file + '.zip', as_attachment=True)
+        # Send a Zip file of the content to the user
+        return send_file(app.config['UPLOADS'] + zip_file + '.zip', as_attachment=True)
+    else:
+        return 'return_type may be missing: How do you want to get the data? zip or json'
