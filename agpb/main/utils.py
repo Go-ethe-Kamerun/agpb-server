@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import json
+import ast
 import unicodedata
 
 from agpb import app
@@ -123,6 +124,7 @@ def create_translation_text_file(trans_text, lang_code):
 
 
 def create_zip_file(directory):
+    root_dir = './agpb/db/data/trans/' + coountry_ext + '_' + lang_code
     shutil.make_archive(directory, 'zip', directory)
     return directory.split('/')[-1]
 
@@ -130,6 +132,15 @@ def create_zip_file(directory):
 def convert_encoded_text(text):
     norm_data = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
     return norm_data.decode('ascii')
+
+
+def get_audio_file_path(audio):
+    country_code = audio.split('_')[0]
+    audio_folder = audio.split('_')[1]
+    audio_full_path = os.path.abspath('./agpb/db/data/trans/' +
+                                country_code + '_' +
+                                audio_folder + '/' + audio)
+    return audio_full_path
 
 
 def get_translation_data(language_code, return_type):
@@ -154,7 +165,10 @@ def get_translation_data(language_code, return_type):
     # translation_data['export default'] = translations
     translations = json.dumps(translations)
     if return_type == 'json':
-        return translations
+        translations = ast.literal_eval(translations)
+        for translation in translations:
+            translation['audio'] = get_audio_file_path(translation['audio'])
+        return json.dumps(translations)
     elif return_type == 'zip':
         trans_directory = create_translation_text_file(translations, language.lang_code)
         # create zip of the directory
