@@ -48,20 +48,25 @@ def get_category_data():
     return categories_data
 
 def build_country_lang_code(lang_code):
-    coountry_ext = 'cm'
+    country_ext = 'cm'
     if lang_code == 'de':
-        coountry_ext = 'de'
-    return coountry_ext + '_' + lang_code
+        country_ext = 'de'
+    return country_ext + '_' + lang_code
 
-def build_lang_url(lang_code):
-    coountry_ext = 'cm'
-    ip_address = 'http://3.17.141.122'
+
+def build_lang_url(lang_code, url_type):
+    country_ext = 'cm'
+    ip_address = app.config['SERVER_ADDRESS']
     api_route = '/api/v1/translations?lang_code='
 
     if lang_code == 'de':
-        coountry_ext = 'de'
+        country_ext = 'de'
 
-    url = ip_address + api_route + coountry_ext + '_' + lang_code
+    url = ip_address + api_route + country_ext + '_' + lang_code
+    if url_type == 'zip':
+        url += '&return_type=zip'
+    else:
+        url += '&return_type=json'
     return url
 
 
@@ -83,7 +88,8 @@ def get_language_data():
             language_data_entry = {}
             language_data_entry['name'] = language.label
             language_data_entry['lang_code'] = build_country_lang_code(language.lang_code)
-            language_data_entry['url'] = build_lang_url(language.lang_code)
+            language_data_entry['zip_url'] = build_lang_url(language.lang_code, 'zip')
+            language_data_entry['json_url'] = build_lang_url(language.lang_code, 'json')
             language_data_entry['supported'] = check_lang_support(build_country_lang_code(
                                                                     language.lang_code))
             language_data.append(language_data_entry)
@@ -92,26 +98,26 @@ def get_language_data():
 
 
 def make_audio_id(translation_id, lang_code):
-    coountry_ext = 'cm'
+    country_ext = 'cm'
 
     if lang_code == 'de':
-        coountry_ext = 'de'
+        country_ext = 'de'
 
     if translation_id < 10:
-        return coountry_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3"
+        return country_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3"
     elif translation_id >= 10 and translation_id <= 99:
-        return coountry_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3"
+        return country_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3"
     else:
-        return coountry_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3"
+        return country_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3"
 
 def create_translation_text_file(trans_text, lang_code):
-    coountry_ext = 'cm'
+    country_ext = 'cm'
 
     if lang_code == 'de':
-        coountry_ext = 'de'
+        country_ext = 'de'
 
-    root_dir = './agpb/db/data/trans/' + coountry_ext + '_' + lang_code
-    file_name = root_dir + "/" +coountry_ext + "_" + lang_code + ".json"
+    root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
+    file_name = root_dir + "/" +country_ext + "_" + lang_code + ".json"
 
     # Remove old file in case of update
     if os.path.isfile(file_name):
@@ -123,8 +129,13 @@ def create_translation_text_file(trans_text, lang_code):
     return root_dir
 
 
-def create_zip_file(directory):
-    root_dir = './agpb/db/data/trans/' + coountry_ext + '_' + lang_code
+def create_zip_file(directory, lang_code):
+    country_ext = 'cm'
+
+    if lang_code == 'de':
+        country_ext = 'de'
+
+    root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
     shutil.make_archive(directory, 'zip', directory)
     return directory.split('/')[-1]
 
@@ -172,7 +183,7 @@ def get_translation_data(language_code, return_type):
     elif return_type == 'zip':
         trans_directory = create_translation_text_file(translations, language.lang_code)
         # create zip of the directory
-        zip_file = create_zip_file(trans_directory)
+        zip_file = create_zip_file(trans_directory, language_code)
 
         # Send a Zip file of the content to the user
         return send_file(app.config['UPLOADS'] + zip_file + '.zip', as_attachment=True)
