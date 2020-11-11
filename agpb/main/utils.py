@@ -146,16 +146,22 @@ def convert_encoded_text(text):
 
 
 def get_audio_file_path(audio):
-    country_code = audio.split('_')[0]
-    audio_folder = audio.split('_')[1]
-    audio_full_path = os.path.abspath('./agpb/db/data/trans/' +
-                                country_code + '_' +
-                                audio_folder + '/' + audio)
+    country_code = audio.split('_')[0] + '_' + audio.split('_')[1]
+    audio_full_path = app.config['SERVER_ADDRESS'] + \
+                        app.config['PLAY_AUDIO_ROUTE'] + 'lang=' +\
+                        country_code + '&file=' + audio
     return audio_full_path
 
 
+<<<<<<< HEAD
 def get_audio_file(file_path):
     return send_file(file_path, as_attachment=True)
+=======
+def get_audio_file(lang_code, audio_number):
+    download_directory = app.config['UPLOADS'] + \
+                        lang_code + '/' + audio_number 
+    return send_file(download_directory, as_attachment=True)
+>>>>>>> Add route to play audio file from server using link
 
 
 def get_translation_data(language_code, return_type):

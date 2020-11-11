@@ -45,9 +45,9 @@ def playAudioFile():
     '''
     Get application categories
     '''
-
-    file_path = request.args.get('path')
-    audio = get_audio_file(file_path)
+    lang_code = request.args.get('lang')
+    audio_file = request.args.get('file')
+    audio = get_audio_file(lang_code, audio_file)
     if audio:
         return audio
     else:

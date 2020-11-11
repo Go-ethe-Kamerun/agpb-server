@@ -17,6 +17,7 @@ app.config['SECRET_KEY']
 app.config['TEMPLATES_AUTO_RELOAD']
 app.config['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
 app.config['SERVER_ADDRESS'] = 'http://3.17.141.122'
+app.config['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'
 
 db = SQLAlchemy(app)
 
