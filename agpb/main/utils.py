@@ -154,6 +154,10 @@ def get_audio_file_path(audio):
     return audio_full_path
 
 
+def get_audio_file(file_path):
+    return send_file(file_path, as_attachment=True)
+
+
 def get_translation_data(language_code, return_type):
     translation_data = {}
     translations = []

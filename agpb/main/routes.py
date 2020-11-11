@@ -4,7 +4,8 @@ import json
 
 from flask import Blueprint, request
 
-from agpb.main.utils import get_category_data, get_language_data, get_translation_data
+from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
+                            get_audio_file)
 
 main = Blueprint('main', __name__)
 
@@ -37,6 +38,21 @@ def getLanguages():
         return language_data
     else:
         return '<h2> Unable to get Category data at the moment</h2>'
+
+
+@main.route('/api/v1/play')
+def playAudioFile():
+    '''
+    Get application categories
+    '''
+
+    file_path = request.args.get('path')
+    audio = get_audio_file(file_path)
+    if audio:
+        return audio
+    else:
+        return 'Audio not found'
+
 
 @main.route('/api/v1/translations')
 def getTranslations():
