@@ -153,15 +153,10 @@ def get_audio_file_path(audio):
     return audio_full_path
 
 
-<<<<<<< HEAD
-def get_audio_file(file_path):
-    return send_file(file_path, as_attachment=True)
-=======
 def get_audio_file(lang_code, audio_number):
     download_directory = app.config['UPLOADS'] + \
                         lang_code + '/' + audio_number 
     return send_file(download_directory, as_attachment=True)
->>>>>>> Add route to play audio file from server using link
 
 
 def get_translation_data(language_code, return_type):
