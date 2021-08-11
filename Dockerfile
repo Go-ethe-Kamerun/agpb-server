@@ -6,7 +6,7 @@ RUN mkdir /application
 
 # copy python dependencies and instlall
 COPY requirements.txt .
-RUN pip instlall -R requirements.txt
+RUN pip install -R requirements.txt
 
 # copy the rest of the application
 COPY . .
