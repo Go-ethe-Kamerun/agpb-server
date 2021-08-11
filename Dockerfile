@@ -15,4 +15,4 @@ EXPOSE 8001
 STOPSIGNAL SIGINT
 
 ENTRYPOINT ["python"]
-CMD ["flask app.py"]
+CMD ["app.py"]
