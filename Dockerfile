@@ -5,7 +5,7 @@ FROM python:3.6
 RUN mkdir /application
 
 # copy python dependencies and instlall
-COPY requirements.txt
+COPY requirements.txt .
 RUN pip instlall -R requirements.txt
 
 # copy the rest of the application
