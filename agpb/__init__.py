@@ -8,16 +8,16 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Load configuration from YAML file
-__dir__ = os.path.dirname(__file__)
-app.config.update(
-    yaml.safe_load(open(os.path.join(__dir__, 'config.yaml'))))
+# __dir__ = os.path.dirname(__file__)
+# app.config.update(
+#     yaml.safe_load(open(os.path.join(__dir__, 'config.yaml'))))
 
-app.config['SQLALCHEMY_DATABASE_URI']
-app.config['SECRET_KEY']
-app.config['TEMPLATES_AUTO_RELOAD']
-app.config['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
-app.config['SERVER_ADDRESS'] = 'http://3.17.141.122'
-app.config['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'
+os.environ['SQLALCHEMY_DATABASE_URI']
+os.environ['SECRET_KEY']
+os.environ['TEMPLATES_AUTO_RELOAD']
+os.environ['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
+os.environ['SERVER_ADDRESS'] = 'http://3.17.141.122'
+os.environ['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'
 
 db = SQLAlchemy(app)
 
