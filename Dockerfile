@@ -15,8 +15,8 @@ RUN pip install -r requirements.txt
 # copy the rest of the application
 COPY . .
 
-EXPOSE 8001
 STOPSIGNAL SIGINT
 
-ENTRYPOINT ["python"]
+ENTRYPOINT [ "python" ]
+
 CMD ["app.py"]
