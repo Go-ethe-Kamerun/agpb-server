@@ -3,6 +3,9 @@ FROM python:3.6
 
 WORKDIR /app
 
+# Create the directory for translations
+RUN mkdir -p  agpb/db/data/trans/
+
 COPY . /app
 
 # copy python dependencies and instlall

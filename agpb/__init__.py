@@ -1,4 +1,4 @@
-import os
+earlimport os
 
 import yaml
 from flask import Flask, request, session
@@ -15,7 +15,7 @@ app = Flask(__name__)
 os.environ['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLALCHEMY_DATABASE_URI", '')
 os.environ['SECRET_KEY'] = os.environ.get("SECRET_KEY", '')
 os.environ['TEMPLATES_AUTO_RELOAD'] = os.environ.get("TEMPLATES_AUTO_RELOADe", '')
-os.environ['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
+os.environ['UPLOADS'] = os.getcwd() + 'agpb/db/data/trans/'
 os.environ['SERVER_ADDRESS'] = 'http://3.17.141.122'
 os.environ['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'
 
