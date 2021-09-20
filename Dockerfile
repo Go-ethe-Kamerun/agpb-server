@@ -1,11 +1,12 @@
 # inherit python image
 FROM python:3.6
 
-# setup directories
-RUN mkdir /application
+WORKDIR /app
+
+COPY . /app
 
 # copy python dependencies and instlall
-COPY requirements.txt .
+COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
 # copy the rest of the application
