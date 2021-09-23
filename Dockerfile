@@ -8,6 +8,11 @@ RUN mkdir -p  agpb/db/data/trans/
 
 COPY . /app
 
+#grant permission to /app
+RUN chmod -R 775 /app
+
+RUN chown -R node:root /app
+
 # copy python dependencies and instlall
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
