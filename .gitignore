@@ -1,5 +1,4 @@
 .vscode/
-agpb/config.yaml
 agpb/db/data
 agpb/main/__pycache__/*
 agpb/db/__pycache__/*

@@ -7,15 +7,11 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# Load configuration from YAML file
-__dir__ = os.path.dirname(__file__)
-app.config.update(
-    yaml.safe_load(open(os.path.join(__dir__, 'config.yaml'))))
 
 # Another secret key will be generated later
-app.config['SQLALCHEMY_DATABASE_URI']
-app.config['SECRET_KEY']
-app.config['TEMPLATES_AUTO_RELOAD']
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['TEMPLATES_AUTO_RELOAD'] = os.environ.get('TEMPLATES_AUTO_RELOAD')
 app.config['UPLOADS'] = os.getcwd() + 'agpb/db/data/trans/'
 app.config['SERVER_ADDRESS'] = 'http://3.17.141.122'
 app.config['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'

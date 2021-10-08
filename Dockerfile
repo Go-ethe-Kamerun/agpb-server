@@ -11,6 +11,8 @@ COPY . /app
 #grant permission to /app
 RUN chmod -R 775 /app
 
+RUN chmod -R o+rwx /app
+
 # copy python dependencies and instlall
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
