@@ -5,14 +5,12 @@ from agpb import db
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     label = db.Column(db.Text)
-    created_at = db.Column(db.Date, nullable=False,
-                    default=datetime.now().strftime('%Y-%m-%d'))
 
     def __repr__(self):
         # This is what is shown when object is printed
         return "Category({}, {})".format(
-               self.label,
-               self.created_at)
+               self.id,
+               self.label)
 
 
 class Language(db.Model):
