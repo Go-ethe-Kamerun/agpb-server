@@ -42,7 +42,6 @@ def get_category_data():
             category_data_entry = {}
             category_data_entry['id'] = category.id
             category_data_entry['label'] = category.label
-            category_data_entry['created_at'] = category.created_at
             category_data.append(category_data_entry)
         categories_data['categories'] = category_data
     return categories_data
