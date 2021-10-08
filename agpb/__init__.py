@@ -11,9 +11,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['TEMPLATES_AUTO_RELOAD'] = os.environ.get('TEMPLATES_AUTO_RELOAD')
-app.config['UPLOADS'] = os.getcwd() + '/agpb/db/data/trans/'
-app.config['SERVER_ADDRESS'] = 'http://3.17.141.122'
-app.config['PLAY_AUDIO_ROUTE'] = '/api/v1/play?'
+app.config['UPLOADS_DIR'] = os.getcwd() + os.environ.get('UPLOADS_DIR')
+app.config['SERVER_ADDRESS'] = os.environ.get('SERVER_ADDRESS')
+app.config['PLAY_AUDIO_ROUTE'] = os.environ.get('PLAY_AUDIO_ROUTE')
 
 db = SQLAlchemy(app)
 
