@@ -153,7 +153,7 @@ def get_audio_file_path(audio):
 
 
 def get_audio_file(lang_code, audio_number):
-    download_directory = app.config['UPLOADS'] + \
+    download_directory = app.config['UPLOADS_DIR'] + \
                         lang_code + '/' + audio_number 
     return send_file(download_directory, as_attachment=True)
 
