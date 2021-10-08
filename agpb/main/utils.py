@@ -190,6 +190,6 @@ def get_translation_data(language_code, return_type):
         zip_file = create_zip_file(trans_directory, language_code)
 
         # Send a Zip file of the content to the user
-        return send_file(app.config['UPLOADS'] + zip_file + '.zip', as_attachment=True)
+        return send_file(app.config['UPLOADS_DIR'] + zip_file + '.zip', as_attachment=True)
     else:
         return 'return_type may be missing: How do you want to get the data? zip or json'
