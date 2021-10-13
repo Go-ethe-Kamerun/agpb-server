@@ -29,7 +29,7 @@ SQLALCHEMY_POOL_RECYCLE: 90
 1. Run the followin on python command line
 ```
 >>> from agpb import db
->>> from agpb.db.extract_data import extract_category_data, naviagate_folder, extract_languages
+>>> from agpb.db.extract_data import extract_category_data, naviagate_folder, extract_languages, extract_text_data
 ```
 
 2. To get category data use run the following
@@ -43,8 +43,14 @@ SQLALCHEMY_POOL_RECYCLE: 90
 >>> lang_data = extract_languages(folder_list)
 ```
 
-4. Inserting the data into the database requires adding them into session first then commiting
-by running the following
+4. To get text data, run the following
+
+```
+>>> text_data = extract_text_data('/Path/to/content_folder') 
+```
+
+5. Inserting the (cat_data, lang_data and text_data) into the database requires adding them into session first then commiting
+by following the format below:
 ```
     >>> for data in cat_data:
     ...     db.session.add(data)
