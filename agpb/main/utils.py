@@ -140,8 +140,8 @@ def create_zip_file(directory, lang_code):
 
 
 def convert_encoded_text(text):
-    norm_data = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
-    return norm_data.decode('ascii')
+    # norm_data = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
+    return text
 
 
 def get_audio_file_path(audio):
@@ -164,6 +164,8 @@ def get_translation_data(language_code, return_type):
     language = Language.query.filter_by(lang_code=language_code).first()
     # category_id = Category.query.filter_by(id=category_number).first().id
     texts = Text.query.filter_by(language_id=language.id).all()
+
+
     # filter text in particular language
     for text in texts:
         translation_entry = {}
@@ -183,7 +185,8 @@ def get_translation_data(language_code, return_type):
         translations = ast.literal_eval(translations)
         for translation in translations:
             translation['audio'] = get_audio_file_path(translation['audio'])
-        return json.dumps(translations)
+
+        return json.dumps(translations, ensure_ascii=False).encode('utf8')
     elif return_type == 'zip':
         trans_directory = create_translation_text_file(translations, language.lang_code)
         # create zip of the directory
