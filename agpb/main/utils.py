@@ -135,8 +135,8 @@ def create_zip_file(directory, lang_code):
         country_ext = 'de'
 
     root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
-    shutil.make_archive(directory, 'zip', directory)
-    return directory.split('/')[-1]
+    archived_file = shutil.make_archive(directory, 'zip', directory)
+    return archived_file
 
 
 def convert_encoded_text(text):
@@ -191,8 +191,7 @@ def get_translation_data(language_code, return_type):
         trans_directory = create_translation_text_file(translations, language.lang_code)
         # create zip of the directory
         zip_file = create_zip_file(trans_directory, language_code)
-
         # Send a Zip file of the content to the user
-        return send_file(app.config['UPLOADS_DIR'] + zip_file + '.zip', as_attachment=True)
+        return send_file(zip_file, as_attachment=True)
     else:
         return 'return_type may be missing: How do you want to get the data? zip or json'
