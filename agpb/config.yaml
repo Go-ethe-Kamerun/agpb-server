@@ -1,3 +1,0 @@
-SECRET_KEY: '$(python -c "import os; print repr(os.urandom(24))")'
-SQLALCHEMY_DATABASE_URI: ''
-SQLALCHEMY_POOL_RECYCLE: 90
