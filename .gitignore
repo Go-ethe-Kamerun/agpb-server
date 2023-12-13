@@ -5,3 +5,4 @@ agpb/db/__pycache__/*
 agpb/__pycache__/*
 agpb/main/db/category_list.csv
 agpb/__pycache__/app.cpython-37.pyc
+agpb/config.yaml
