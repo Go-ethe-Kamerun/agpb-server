@@ -6,3 +6,5 @@ agpb/__pycache__/*
 agpb/main/db/category_list.csv
 agpb/__pycache__/app.cpython-37.pyc
 *config.yaml
+venv/
+.tox/

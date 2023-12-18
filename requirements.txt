@@ -1,8 +1,10 @@
 flask
-mysqlclient==2.2.1
+mysqlclient==2.1.1
 PyMySQL
 coverage
 flask_sqlalchemy
 pyyaml
 nose2
 flask-cors
+flake8
+tox

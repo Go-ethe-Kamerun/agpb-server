@@ -46,6 +46,7 @@ def get_category_data():
         categories_data['categories'] = category_data
     return categories_data
 
+
 def build_country_lang_code(lang_code):
     country_ext = 'cm'
     if lang_code == 'de':
@@ -90,7 +91,7 @@ def get_language_data():
             language_data_entry['zip_url'] = build_lang_url(language.lang_code, 'zip')
             language_data_entry['json_url'] = build_lang_url(language.lang_code, 'json')
             language_data_entry['supported'] = check_lang_support(build_country_lang_code(
-                                                                    language.lang_code))
+                                                                  language.lang_code))
             language_data.append(language_data_entry)
         languages_data['data'] = language_data
     return languages_data
@@ -109,14 +110,14 @@ def make_audio_id(translation_id, lang_code):
     else:
         return country_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3"
 
+
 def create_translation_text_file(trans_text, lang_code):
     country_ext = 'cm'
 
     if lang_code == 'de':
         country_ext = 'de'
-
     root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
-    file_name = root_dir + "/" +country_ext + "_" + lang_code + ".json"
+    file_name = root_dir + "/" + country_ext + "_" + lang_code + ".json"
 
     # Remove old file in case of update
     if os.path.isfile(file_name):
@@ -129,12 +130,6 @@ def create_translation_text_file(trans_text, lang_code):
 
 
 def create_zip_file(directory, lang_code):
-    country_ext = 'cm'
-
-    if lang_code == 'de':
-        country_ext = 'de'
-
-    root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
     archived_file = shutil.make_archive(directory, 'zip', directory)
     return archived_file
 
@@ -147,24 +142,22 @@ def convert_encoded_text(text):
 def get_audio_file_path(audio):
     country_code = audio.split('_')[0] + '_' + audio.split('_')[1]
     audio_full_path = app.config['SERVER_ADDRESS'] + \
-                        app.config['PLAY_AUDIO_ROUTE'] + 'lang=' +\
-                        country_code + '&file=' + audio
+        app.config['PLAY_AUDIO_ROUTE'] + 'lang=' + \
+        country_code + '&file=' + audio
     return audio_full_path
 
 
 def get_audio_file(lang_code, audio_number):
     download_directory = app.config['UPLOADS_DIR'] + \
-                        lang_code + '/' + audio_number 
+        lang_code + '/' + audio_number
     return send_file(download_directory, as_attachment=True)
 
 
 def get_translation_data(language_code, return_type):
-    translation_data = {}
     translations = []
     language = Language.query.filter_by(lang_code=language_code).first()
     # category_id = Category.query.filter_by(id=category_number).first().id
     texts = Text.query.filter_by(language_id=language.id).all()
-
 
     # filter text in particular language
     for text in texts:
@@ -176,7 +169,7 @@ def get_translation_data(language_code, return_type):
         else:
             translation_entry['category'] = Category.query.filter_by(id=text.category_id).first().label
         translation_entry['audio'] = make_audio_id(text.translation_id,
-                                                    language.lang_code)
+                                                   language.lang_code)
         translations.append(translation_entry)
 
     # translation_data['export default'] = translations

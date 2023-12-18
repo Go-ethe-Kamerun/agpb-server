@@ -47,12 +47,11 @@ def extract_languages(folder_dir_list):
         language['label'] = folder.split('_')[1]
         language['lang_code'] = folder.split('_')[0]
         languages.append(language)
-    languages = [ Language(label=lang['label'], lang_code=lang['lang_code']) for lang in languages]
+    languages = [Language(label=lang['label'], lang_code=lang['lang_code']) for lang in languages]
     return languages
 
 
 def get_text_category(index_number):
-    category_list_file = ''
     category_data = pd.read_csv('agpb/db/data/category_list.csv', sep='\t').values
     for data in category_data:
         category_number = int(data[0].split(',')[0])
@@ -62,13 +61,12 @@ def get_text_category(index_number):
             return category_number
 
 
-
 def extract_text_data(content_folder):
     text_data_files = []
     text_data = []
     root = content_folder
     folder_content_list = naviagate_folder(content_folder)
-    folder_content_list = [ root + '/' + folder for folder in folder_content_list ]
+    folder_content_list = [root + '/' + folder for folder in folder_content_list]
     for folder_content in folder_content_list:
         for text_file in os.listdir(folder_content):
             if text_file.endswith('.csv'):
