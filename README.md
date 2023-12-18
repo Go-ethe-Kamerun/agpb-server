@@ -56,3 +56,8 @@ by following the format below:
     ...     db.session.add(data)
     >>> db.session.commit()
 ```
+
+## Testing
+To run the tests, use the following commands 
+- `tox c` to configure tox 
+- `tox r` to run the various tests
