@@ -1,5 +1,5 @@
 flask
-mysqlclient
+mysqlclient==2.2.1
 PyMySQL
 coverage
 flask_sqlalchemy
