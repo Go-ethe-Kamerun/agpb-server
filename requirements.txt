@@ -8,3 +8,4 @@ nose2
 flask-cors
 flake8
 tox
+cryptography
