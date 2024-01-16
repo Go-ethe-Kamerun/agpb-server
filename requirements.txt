@@ -9,3 +9,4 @@ flask-cors
 flake8
 tox
 cryptography
+Flask-Migrate

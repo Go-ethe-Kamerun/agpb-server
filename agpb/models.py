@@ -41,3 +41,20 @@ class Text(db.Model):
         return "Text({}, {})".format(
                self.label,
                self.category_id)
+
+
+class Contribution(db.Model):
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    wd_item = db.Column(db.String(150))
+    username = db.Column(db.String(150))
+    lang_code = db.Column(db.String(150))
+    edit_type = db.Column(db.String(150))
+    data = db.Column(db.Text)
+    date = db.Column(db.Date, nullable=False,
+                     default=datetime.now().strftime('%Y-%m-%d'))
+
+    def __repr__(self):
+        # This is what is shown when object is printed
+        return "Contribution({}, {})".format(
+               self.wd_item,
+               self.username)

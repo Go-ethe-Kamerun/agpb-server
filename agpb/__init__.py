@@ -4,6 +4,7 @@ import yaml
 from flask import Flask, request, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 
@@ -30,6 +31,10 @@ else:
 
 
 db = SQLAlchemy(app)
+
+# init db migrate 
+migrate = Migrate()
+migrate.init_app(app, db)
 
 # Enble CORS on application
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
