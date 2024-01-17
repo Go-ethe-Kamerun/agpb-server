@@ -4,8 +4,10 @@ import json
 
 from flask import Blueprint, request
 
+from agpb.models import Contribution
+
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
-                             get_audio_file)
+                             get_audio_file, get_serialized_data)
 
 main = Blueprint('main', __name__)
 
@@ -70,3 +72,15 @@ def getTranslations():
         return translation_data
     else:
         return '<h2> Unable to get Translation data at the moment</h2>'
+
+
+@main.route('/api/v1/contributions')
+def getContributions():
+    '''
+    Get contributions
+    '''
+    contributions = get_serialized_data(Contribution.query.all())
+    username = request.args.get('username')
+    if username:
+        return get_serialized_data(Contribution.query.filter_by(username=username).all())
+    return contributions

@@ -188,3 +188,7 @@ def get_translation_data(language_code, return_type):
         return send_file(zip_file, as_attachment=True)
     else:
         return 'return_type may be missing: How do you want to get the data? zip or json'
+
+
+def get_serialized_data(data):
+    return [datum.serialize() for datum in data]

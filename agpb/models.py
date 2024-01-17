@@ -1,5 +1,6 @@
 from datetime import datetime
 from agpb import db
+from agpb.serializer import Serializer
 
 
 class Category(db.Model):
@@ -43,7 +44,7 @@ class Text(db.Model):
                self.category_id)
 
 
-class Contribution(db.Model):
+class Contribution(db.Model, Serializer):
     id = db.Column(db.Integer, primary_key=True, index=True)
     wd_item = db.Column(db.String(150))
     username = db.Column(db.String(150))
@@ -52,6 +53,9 @@ class Contribution(db.Model):
     data = db.Column(db.Text)
     date = db.Column(db.Date, nullable=False,
                      default=datetime.now().strftime('%Y-%m-%d'))
+
+    def serialize(self):
+        return Serializer.serialize(self)
 
     def __repr__(self):
         # This is what is shown when object is printed
