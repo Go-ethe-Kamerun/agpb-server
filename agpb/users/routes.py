@@ -4,7 +4,7 @@ from flask import Blueprint, redirect, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 import mwoauth
 
-from agpb import app
+from agpb import app, db
 from agpb.models import User
 from agpb.main.utils import commit_changes_to_db, send_abort
 from agpb.users.utils import generate_random_token
@@ -37,8 +37,12 @@ def login():
                 request_token._fields, request_token))
             if session.get('username'):
                 user = User.query.filter_by(username=session.get('username')).first()
-                if user:
-                    login_user(user)
+                if not user:
+                    user = User(username=session.get('username'), pref_lang='en', temp_token = generate_random_token())
+                    db.session.add(user)
+
+                    if commit_changes_to_db():
+                        pass       
             return redirect(redirect_string)
 
 
@@ -66,13 +70,12 @@ def oauth_callback():
         session['access_token'] = dict(zip(
             access_token._fields, access_token))
         session['username'] = identity['username']
-        print('Welcome %(username)s!', username=session['username'])
+        print(identity.keys())
         # In this case, handshake is finished and we redirect
         user = User.query.filter_by(username=session.get('username')).first()
-        user_token = generate_random_token()
-        user.temp_token = user_token
+        user.temp_token = generate_random_token()
         if commit_changes_to_db():
-            return redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user_token), code=302)
+            return redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
         # User token was not generated
         send_abort('Error adding user to database', 401)
 
