@@ -3,6 +3,7 @@ import yaml
 
 from flask import Flask, request, session
 from flask_cors import CORS
+from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -36,11 +37,23 @@ db = SQLAlchemy(app)
 migrate = Migrate()
 migrate.init_app(app, db)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'main.home'
+login_manager.login_message = 'You Need to Login to Access This Page!'
+login_manager.login_message_category = 'danger'
+
 # Enble CORS on application
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # we import all our blueprint routes here
 from agpb.main.routes import main
+from agpb.users.routes import users
+
 
 # Here we register the various blue_prints of our app
 app.register_blueprint(main)
+app.register_blueprint(users)
+
+
+app.app_context().push()

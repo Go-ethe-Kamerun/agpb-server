@@ -2,12 +2,12 @@ import os
 import sys
 import json
 
-from flask import Blueprint, request
-
+from flask import Blueprint, request, abort
+from agpb import db
 from agpb.models import Contribution
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
-                             get_audio_file, get_serialized_data)
+                             get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db)
 
 main = Blueprint('main', __name__)
 
@@ -84,3 +84,17 @@ def getContributions():
     if username:
         return get_serialized_data(Contribution.query.filter_by(username=username).all())
     return contributions
+
+
+@main.route('/api/v1/contributions/create', methods=['POST'])
+def createContributions():
+    data = json.loads(request.data)
+    if not data:
+        abort(400, 'Please provide data for contribution')
+    contribution = create_contribution(data)
+    if not contribution:
+        abort(400, 'Contribution could not be created')
+    db.session.add(contribution)
+    if commit_changes_to_db:
+        return "success"
+    return "failure"

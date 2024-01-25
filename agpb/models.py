@@ -1,6 +1,12 @@
 from datetime import datetime
-from agpb import db
+from agpb import db, login_manager
 from agpb.serializer import Serializer
+
+
+
+@login_manager.user_loader
+def user_loader(user_id):
+    return User.query.get(int(user_id))
 
 
 class Category(db.Model):
@@ -62,3 +68,19 @@ class Contribution(db.Model, Serializer):
         return "Contribution({}, {})".format(
                self.wd_item,
                self.username)
+
+
+class User(db.Model, Serializer):
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    pref_lang = db.Column(db.String(10), default='en')
+    temp_token = db.Column(db.String(100), unique=True, nullable=False)
+
+    def serialize(self):
+        return Serializer.serialize(self)
+
+    def __repr__(self):
+        # This is what is shown when object is printed
+        return "User({}, {}, {})".format(
+                self.username,
+                self.pref_lang)

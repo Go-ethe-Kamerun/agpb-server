@@ -10,3 +10,5 @@ flake8
 tox
 cryptography
 Flask-Migrate
+mwoauth
+flask_login

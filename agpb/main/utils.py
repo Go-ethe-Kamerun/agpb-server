@@ -4,32 +4,31 @@ import sys
 import json
 import ast
 import unicodedata
+import traceback
 
 from agpb import app
-from flask import send_file, request
+from flask import send_file, request, abort, Response
 from agpb import db
 
-from agpb.models import Category, Language, Text
+from agpb.models import Category, Language, Text, Contribution
 
 
-def commit_changes_to_db(data=None):
+def commit_changes_to_db():
     """
     Test for the success of a database commit operation.
 
     """
-    if data is not None:
-        for d in data:
-            db.session.add(d)
     try:
         db.session.commit()
-    except Exception as e:
+        return True
+    except Exception:
         # TODO: We could add a try catch here for the error
-        print('-------------->>>>>', file=sys.stderr)
-        print(str(e), file=sys.stderr)
+        print('Exception when committing to database.', file=sys.stderr)
+        traceback.print_stack()
+        traceback.print_exc()
         db.session.rollback()
         # for resetting non-commited .add()
         db.session.flush()
-        return True
     return False
 
 
@@ -192,3 +191,16 @@ def get_translation_data(language_code, return_type):
 
 def get_serialized_data(data):
     return [datum.serialize() for datum in data]
+
+
+def create_contribution(data):
+
+    contribution = Contribution()
+
+    return contribution
+
+
+def send_abort(message, error_code):
+    error_message = json.dumps({'Message': message})
+    return abort(Response(error_message, error_code))
+
