@@ -209,7 +209,6 @@ def manage_session(f):
     def inner(*args, **kwargs):
         # MANUAL PRE PING
         try:
-            print('managing session now')
             db.session.execute(text("SELECT 1;"))
             db.session.commit()
         except Exception:

@@ -56,7 +56,6 @@ def before_request():
         db.session.execute(text("SELECT 1;"))
         db.session.commit()
     except Exception as e:
-        print(e)
         db.session.rollback()
     # Update session language
     get_locale()
