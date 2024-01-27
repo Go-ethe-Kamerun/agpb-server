@@ -70,7 +70,6 @@ def oauth_callback():
         session['access_token'] = dict(zip(
             access_token._fields, access_token))
         session['username'] = identity['username']
-        print(identity.keys())
         # In this case, handshake is finished and we redirect
         user = User.query.filter_by(username=session.get('username')).first()
         user.temp_token = generate_random_token()
