@@ -5,7 +5,7 @@ import json
 import ast
 import unicodedata
 import traceback
-
+from sqlalchemy.sql import text
 from agpb import app
 from flask import send_file, request, abort, Response
 from agpb import db
@@ -204,3 +204,28 @@ def send_abort(message, error_code):
     error_message = json.dumps({'Message': message})
     return abort(Response(error_message, error_code))
 
+
+def manage_session(f):
+    def inner(*args, **kwargs):
+        # MANUAL PRE PING
+        try:
+            print('managing session now')
+            db.session.execute(text("SELECT 1;"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        finally:
+            db.session.close()
+
+        # SESSION COMMIT, ROLLBACK, CLOSE
+        try:
+            res = f(*args, **kwargs)
+            db.session.commit()
+            return res
+        except Exception as e:
+            db.session.rollback()
+            raise e
+            # OR return traceback.format_exc()
+        finally:
+            db.session.close()
+    return inner

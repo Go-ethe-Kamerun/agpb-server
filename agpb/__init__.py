@@ -5,6 +5,7 @@ from flask import Flask, request, session
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import text
 from flask_migrate import Migrate
 
 app = Flask(__name__)
@@ -31,6 +32,11 @@ else:
         yaml.safe_load(open(os.path.join(__dir__, 'test_config.yaml'))))
 
 
+def get_locale():
+    if request.args.get('lang'):
+        session['lang'] = request.args.get('lang')
+    return session.get('lang', 'en')
+
 db = SQLAlchemy(app)
 
 # init db migrate 
@@ -42,6 +48,19 @@ login_manager.init_app(app)
 login_manager.login_view = 'main.home'
 login_manager.login_message = 'You Need to Login to Access This Page!'
 login_manager.login_message_category = 'danger'
+
+
+@app.before_request
+def before_request():
+    try:
+        db.session.execute(text("SELECT 1;"))
+        db.session.commit()
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+    # Update session language
+    get_locale()
+
 
 # Enble CORS on application
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})

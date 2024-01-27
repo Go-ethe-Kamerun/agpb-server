@@ -6,13 +6,14 @@ import mwoauth
 
 from agpb import app, db
 from agpb.models import User
-from agpb.main.utils import commit_changes_to_db, send_abort
+from agpb.main.utils import commit_changes_to_db, send_abort, manage_session
 from agpb.users.utils import generate_random_token
 
 
 users = Blueprint('users', __name__)
 
 
+@manage_session
 @users.route('/login')
 def login():
     """Initiate an OAuth login.
@@ -87,6 +88,7 @@ def logout():
     send_abort('See you next time!', 200)
 
 
+@manage_session
 @users.route('/api/v1/verify_token', methods=['GET','POST'])
 def get_current_user_info():
     token = request.args.get('token')
@@ -94,7 +96,7 @@ def get_current_user_info():
     user = User.query.filter_by(temp_token=token).first()
     if not user:
         send_abort("No user with token", 404)
-    user_infomration = {}   
+    user_infomration = {}
     user_info_obj = {}
 
     user_info_obj['username'] = user.username

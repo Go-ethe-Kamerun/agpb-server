@@ -7,7 +7,8 @@ from agpb import db
 from agpb.models import Contribution
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
-                             get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db)
+                             get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db,
+                             manage_session)
 
 main = Blueprint('main', __name__)
 
@@ -16,7 +17,7 @@ main = Blueprint('main', __name__)
 def home():
     return '<h2> Welcome to African German Phrasebook Server</h2>'
 
-
+@manage_session
 @main.route('/api/v1/categories')
 def getCategories():
     '''
@@ -31,6 +32,7 @@ def getCategories():
         return '<h2> Unable to get Category data at the moment</h2>'
 
 
+@manage_session
 @main.route('/api/v1/languages')
 def getLanguages():
     '''
@@ -59,6 +61,7 @@ def playAudioFile():
         return 'Audio not found'
 
 
+@manage_session
 @main.route('/api/v1/translations')
 def getTranslations():
     '''
@@ -74,6 +77,7 @@ def getTranslations():
         return '<h2> Unable to get Translation data at the moment</h2>'
 
 
+@manage_session
 @main.route('/api/v1/contributions')
 def getContributions():
     '''
@@ -86,6 +90,7 @@ def getContributions():
     return contributions
 
 
+@manage_session
 @main.route('/api/v1/contributions/create', methods=['POST'])
 def createContributions():
     data = json.loads(request.data)
