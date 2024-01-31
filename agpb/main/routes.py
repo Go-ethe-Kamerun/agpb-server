@@ -2,13 +2,14 @@ import os
 import sys
 import json
 
-from flask import Blueprint, request, abort
-from agpb import db
-from agpb.models import Contribution
+from flask import Blueprint, request, abort, session
+from agpb import db, app
+from agpb.models import Contribution, User
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
                              get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db,
-                             manage_session)
+                             manage_session, send_abort, generate_csrf_token,
+                             make_edit_api_call)
 
 main = Blueprint('main', __name__)
 
@@ -16,6 +17,7 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def home():
     return '<h2> Welcome to African German Phrasebook Server</h2>'
+
 
 @manage_session
 @main.route('/api/v1/categories')
@@ -103,3 +105,52 @@ def createContributions():
     if commit_changes_to_db:
         return "success"
     return "failure"
+
+
+@main.route('/api/post-contribution', methods=['POST'])
+def postContribution():
+    contribution_data = request.json
+    username = session.get('username', None)
+
+    latest_base_rev_id = 0
+
+    if not username:
+        send_abort('User does not exist', 401)
+    
+    user = User.query.filter_by(username=username).first()
+    user_contributions = []
+
+    valid_actions = [
+        'wbsetclaim',
+        'wbsetlabel',
+        'wbsetdescription'
+    ]
+    if contribution_data['edit_type'] not in valid_actions:
+        send_abort('Incorrect edit type', 401)
+
+    contribution = Contribution(username=username,
+                                wd_item=contribution_data['wd_item'],
+                                lang_code=contribution_data['lang_code'],
+                                edit_type=contribution_data['edit_type'],
+                                data=contribution_data['data'])
+
+    csrf_token, api_auth_token = generate_csrf_token(
+                app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'],
+                session.get('access_token')['key'],
+                session.get('access_token')['secret']
+            )
+    
+    lastrevid = make_edit_api_call(csrf_token,
+                                   api_auth_token,
+                                   contribution_data)
+    
+    if not lastrevid:
+        send_abort('Edit failed', 401)
+
+    db.session.add(contribution)
+    latest_base_rev_id = lastrevid
+
+    if not commit_changes_to_db():
+        send_abort('Contribution not saved', 403)
+
+    return send_abort(str(latest_base_rev_id), 200)

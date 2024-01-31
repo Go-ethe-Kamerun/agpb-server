@@ -1,12 +1,12 @@
 import json
 
-from flask import Blueprint, redirect, request, session, url_for
+from flask import Blueprint, redirect, request, session, url_for, make_response
 from flask_login import current_user, login_user, logout_user
 import mwoauth
 
 from agpb import app, db
 from agpb.models import User
-from agpb.main.utils import commit_changes_to_db, send_abort, manage_session
+from agpb.main.utils import commit_changes_to_db, send_abort, manage_session, generate_csrf_token
 from agpb.users.utils import generate_random_token
 
 
@@ -74,8 +74,11 @@ def oauth_callback():
         # In this case, handshake is finished and we redirect
         user = User.query.filter_by(username=session.get('username')).first()
         user.temp_token = generate_random_token()
+        bearer_token = request.args.get('oauth_token')
+        response = redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
+        response.headers['Authorization'] = 'Bearer ' +  str(bearer_token)
         if commit_changes_to_db():
-            return redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
+            return response
         # User token was not generated
         send_abort('Error adding user to database', 401)
 

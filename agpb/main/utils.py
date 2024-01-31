@@ -3,21 +3,21 @@ import shutil
 import sys
 import json
 import ast
-import unicodedata
+import requests
 import traceback
 from sqlalchemy.sql import text
-from agpb import app
+from agpb import app, db
 from flask import send_file, request, abort, Response
-from agpb import db
+from requests_oauthlib import OAuth1
 
 from agpb.models import Category, Language, Text, Contribution
 
 
 def commit_changes_to_db():
-    """
+    '''
     Test for the success of a database commit operation.
 
-    """
+    '''
     try:
         db.session.commit()
         return True
@@ -103,11 +103,11 @@ def make_audio_id(translation_id, lang_code):
         country_ext = 'de'
 
     if translation_id < 10:
-        return country_ext + "_" + lang_code + "_00" + str(translation_id) + ".mp3"
+        return country_ext + '_' + lang_code + '_00' + str(translation_id) + '.mp3'
     elif translation_id >= 10 and translation_id <= 99:
-        return country_ext + "_" + lang_code + "_0" + str(translation_id) + ".mp3"
+        return country_ext + '_' + lang_code + '_0' + str(translation_id) + '.mp3'
     else:
-        return country_ext + "_" + lang_code + "_" + str(translation_id) + ".mp3"
+        return country_ext + '_' + lang_code + '_' + str(translation_id) + '.mp3'
 
 
 def create_translation_text_file(trans_text, lang_code):
@@ -116,7 +116,7 @@ def create_translation_text_file(trans_text, lang_code):
     if lang_code == 'de':
         country_ext = 'de'
     root_dir = './agpb/db/data/trans/' + country_ext + '_' + lang_code
-    file_name = root_dir + "/" + country_ext + "_" + lang_code + ".json"
+    file_name = root_dir + '/' + country_ext + '_' + lang_code + '.json'
 
     # Remove old file in case of update
     if os.path.isfile(file_name):
@@ -209,7 +209,7 @@ def manage_session(f):
     def inner(*args, **kwargs):
         # MANUAL PRE PING
         try:
-            db.session.execute(text("SELECT 1;"))
+            db.session.execute(text('SELECT 1;'))
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -228,3 +228,73 @@ def manage_session(f):
         finally:
             db.session.close()
     return inner
+
+
+
+def generate_csrf_token(app_key, app_secret, user_key, user_secret):
+    '''
+    Generate CSRF token for edit request
+
+    Keyword arguments:
+    app_key -- The application api auth key
+    app_secret -- The application api auth secret
+    user_key -- User auth key generated at login
+    user_secret -- User secret generated at login
+    '''
+    # We authenticate the user using the keys
+    auth = OAuth1(app_key, app_secret, user_key, user_secret)
+
+    # Get token
+    token_request = requests.get(app.config['API_URL'], params={
+        'action': 'query',
+        'meta': 'tokens',
+        'format': 'json',
+    }, auth=auth)
+    token_request.raise_for_status()
+
+    # We get the CSRF token from the result to be used in editing
+    CSRF_TOKEN = token_request.json()['query']['tokens']['csrftoken']
+    return CSRF_TOKEN, auth
+
+
+def get_claim_options(wd_item_id, media_file_name):  
+    return {
+        'id': wd_item_id,
+        'type': 'claim',
+        'mainsnak': { 
+            'snaktype': 'value',
+            'property': 'P443',
+            'datavalue': {
+                'value': media_file_name,
+                'type': 'commonsMedia'
+            }
+        }
+    }
+
+
+def make_edit_api_call(csrf_token, api_auth_token, contribution_data):
+    edit_type = contribution_data['edit_type']
+    params = []
+    params['format'] = 'json'
+    params['token'] = csrf_token
+    params['summary'] = '@' + app.config['APP_NAME']
+    params['id'] = contribution_data['wd_item']
+
+    if edit_type in ['label', 'description']:
+        params['action'] = 'wbsetlabel' if edit_type == 'label' else 'wbsetdescription'
+        params['language'] = contribution_data['lang_code']
+    else:
+        params['action'] = 'setclaim'
+        params['claim'] = json.dumps(get_claim_options(contribution_data['wd_item']),
+                                                       contribution_data['data'])
+
+    response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
+    revision_id = None
+
+    if response.status_code != 200:
+        send_abort('Unable to edit item', 401)
+
+    result = response.json()
+    entity  = result.get('entity')
+    revision_id = entity.get('lastrevid')
+    return revision_id
