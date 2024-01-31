@@ -44,7 +44,6 @@ def login():
 
                     if commit_changes_to_db():
                         pass
-                login_user(user)
             return redirect(redirect_string)
 
 
@@ -79,6 +78,7 @@ def oauth_callback():
         response = redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
         response.headers['Authorization'] = 'Bearer ' +  str(bearer_token)
         if commit_changes_to_db():
+            login_user(user)
             return response
         # User token was not generated
         send_abort('Error adding user to database', 401)
