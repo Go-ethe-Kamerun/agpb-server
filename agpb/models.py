@@ -1,7 +1,7 @@
 from datetime import datetime
 from agpb import db, login_manager
 from agpb.serializer import Serializer
-
+from flask_login import UserMixin
 
 
 @login_manager.user_loader
@@ -70,7 +70,7 @@ class Contribution(db.Model, Serializer):
                self.username)
 
 
-class User(db.Model, Serializer):
+class User(db.Model,UserMixin, Serializer):
     id = db.Column(db.Integer, primary_key=True, index=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     pref_lang = db.Column(db.String(10), default='en')
