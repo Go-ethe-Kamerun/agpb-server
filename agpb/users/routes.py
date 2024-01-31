@@ -43,7 +43,8 @@ def login():
                     db.session.add(user)
 
                     if commit_changes_to_db():
-                        pass       
+                        pass
+                login_user(user)
             return redirect(redirect_string)
 
 

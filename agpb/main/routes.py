@@ -116,9 +116,6 @@ def postContribution():
 
     if not username:
         send_abort('User does not exist', 401)
-    
-    user = User.query.filter_by(username=username).first()
-    user_contributions = []
 
     valid_actions = [
         'wbsetclaim',
