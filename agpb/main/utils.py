@@ -7,7 +7,7 @@ import requests
 import traceback
 from sqlalchemy.sql import text
 from agpb import app, db
-from flask import send_file, request, abort, Response
+from flask import send_file, abort, Response
 from requests_oauthlib import OAuth1
 
 from agpb.models import Category, Language, Text, Contribution
