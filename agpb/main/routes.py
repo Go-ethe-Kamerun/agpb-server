@@ -92,21 +92,6 @@ def getContributions():
     return contributions
 
 
-@manage_session
-@main.route('/api/v1/contributions/create', methods=['POST'])
-def createContributions():
-    data = json.loads(request.data)
-    if not data:
-        abort(400, 'Please provide data for contribution')
-    contribution = create_contribution(data)
-    if not contribution:
-        abort(400, 'Contribution could not be created')
-    db.session.add(contribution)
-    if commit_changes_to_db:
-        return "success"
-    return "failure"
-
-
 @main.route('/api/v1/post-contribution', methods=['POST'])
 def postContribution():
     contribution_data = request.json
