@@ -107,7 +107,7 @@ def createContributions():
     return "failure"
 
 
-@main.route('/api/post-contribution', methods=['POST'])
+@main.route('/api/v1/post-contribution', methods=['POST'])
 def postContribution():
     contribution_data = request.json
     username = session.get('username', None)
