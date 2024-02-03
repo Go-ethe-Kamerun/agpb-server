@@ -2,7 +2,7 @@ import os
 import sys
 import json
 
-from flask import Blueprint, request, abort, session
+from flask import Blueprint, request, session
 from agpb import db, app
 from agpb.models import Contribution, User
 
