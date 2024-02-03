@@ -10,7 +10,7 @@ from agpb import app, db
 from flask import send_file, abort, Response
 from requests_oauthlib import OAuth1
 
-from agpb.models import Category, Language, Text, Contribution
+from agpb.models import Category, Language, Text
 
 
 def commit_changes_to_db():
