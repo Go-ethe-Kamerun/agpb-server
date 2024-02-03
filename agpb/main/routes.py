@@ -24,7 +24,6 @@ def getCategories():
     Get application categories
     '''
 
-    # section_name = request.args.get('section')
     category_data = get_category_data()
     if category_data:
         return category_data
