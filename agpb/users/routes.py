@@ -6,7 +6,7 @@ import mwoauth
 
 from agpb import app, db
 from agpb.models import User
-from agpb.main.utils import commit_changes_to_db, send_response, manage_session, generate_csrf_token
+from agpb.main.utils import commit_changes_to_db, send_response, manage_session
 from agpb.users.utils import generate_random_token
 
 
