@@ -272,12 +272,12 @@ def get_claim_options(wd_item_id, media_file_name):
     }
 
 
-def make_edit_api_call(csrf_token, api_auth_token, contribution_data):
+def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
     edit_type = contribution_data['edit_type']
     params = {}
     params['format'] = 'json'
     params['token'] = csrf_token
-    params['summary'] = '@' + app.config['APP_NAME']
+    params['summary'] = username + '@' + app.config['APP_NAME']
     params['id'] = contribution_data['wd_item']
     params['value'] = contribution_data['data']
 
