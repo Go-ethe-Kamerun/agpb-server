@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, request, session
 from agpb import db, app
-from agpb.models import Contribution, User
+from agpb.models import Contribution
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
                              get_audio_file, get_serialized_data, commit_changes_to_db,
