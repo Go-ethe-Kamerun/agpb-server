@@ -139,7 +139,8 @@ def postContribution():
     
     lastrevid = make_edit_api_call(csrf_token,
                                    api_auth_token,
-                                   contribution_data)
+                                   contribution_data,
+                                   username)
     
     if not lastrevid:
         send_abort('Edit failed', 401)
