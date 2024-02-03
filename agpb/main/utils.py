@@ -193,13 +193,6 @@ def get_serialized_data(data):
     return [datum.serialize() for datum in data]
 
 
-def create_contribution(data):
-
-    contribution = Contribution()
-
-    return contribution
-
-
 def send_response(message, error_code):
     error_message = json.dumps({'Message': message})
     return abort(Response(error_message, error_code))

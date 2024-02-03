@@ -7,7 +7,7 @@ from agpb import db, app
 from agpb.models import Contribution, User
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
-                             get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db,
+                             get_audio_file, get_serialized_data, commit_changes_to_db,
                              manage_session, send_response, generate_csrf_token,
                              make_edit_api_call)
 
