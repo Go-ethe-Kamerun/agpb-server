@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, redirect, request, session, url_for, make_response
+from flask import Blueprint, redirect, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 import mwoauth
 
@@ -13,7 +13,6 @@ from agpb.users.utils import generate_random_token
 users = Blueprint('users', __name__)
 
 
-@manage_session
 @users.route('/login')
 def login():
     """Initiate an OAuth login.

@@ -274,14 +274,15 @@ def get_claim_options(wd_item_id, media_file_name):
 
 def make_edit_api_call(csrf_token, api_auth_token, contribution_data):
     edit_type = contribution_data['edit_type']
-    params = []
+    params = {}
     params['format'] = 'json'
     params['token'] = csrf_token
     params['summary'] = '@' + app.config['APP_NAME']
     params['id'] = contribution_data['wd_item']
+    params['value'] = contribution_data['data']
 
-    if edit_type in ['label', 'description']:
-        params['action'] = 'wbsetlabel' if edit_type == 'label' else 'wbsetdescription'
+    if edit_type in ['wbsetlabel', 'wbsetdescription']:
+        params['action'] = 'wbsetlabel' if edit_type == 'wbsetlabel' else 'wbsetdescription'
         params['language'] = contribution_data['lang_code']
     else:
         params['action'] = 'setclaim'
