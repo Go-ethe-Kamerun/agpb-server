@@ -200,7 +200,7 @@ def create_contribution(data):
     return contribution
 
 
-def send_abort(message, error_code):
+def send_response(message, error_code):
     error_message = json.dumps({'Message': message})
     return abort(Response(error_message, error_code))
 
@@ -293,7 +293,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
     revision_id = None
 
     if response.status_code != 200:
-        send_abort('Unable to edit item', 401)
+        send_response('Unable to edit item', 401)
 
     result = response.json()
     entity  = result.get('entity')

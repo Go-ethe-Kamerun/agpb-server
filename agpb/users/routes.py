@@ -6,7 +6,7 @@ import mwoauth
 
 from agpb import app, db
 from agpb.models import User
-from agpb.main.utils import commit_changes_to_db, send_abort, manage_session, generate_csrf_token
+from agpb.main.utils import commit_changes_to_db, send_response, manage_session, generate_csrf_token
 from agpb.users.utils import generate_random_token
 
 
@@ -50,7 +50,7 @@ def login():
 def oauth_callback():
     """OAuth handshake callback."""
     if 'request_token' not in session:
-        send_abort('OAuth callback failed. Are cookies disabled?', 404)
+        send_response('OAuth callback failed. Are cookies disabled?', 404)
 
     consumer_token = mwoauth.ConsumerToken(
         app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'])
@@ -65,7 +65,7 @@ def oauth_callback():
             app.config['OAUTH_MWURI'], consumer_token, access_token)
     except Exception:
         app.logger.exception('OAuth authentication failed')
-        send_abort('OAuth callback failed. Are cookies disabled?', 404)
+        send_response('OAuth callback failed. Are cookies disabled?', 404)
     else:
         session['access_token'] = dict(zip(
             access_token._fields, access_token))
@@ -80,7 +80,7 @@ def oauth_callback():
             login_user(user)
             return response
         # User token was not generated
-        send_abort('Error adding user to database', 401)
+        send_response('Error adding user to database', 401)
 
 
 @users.route('/logout')
@@ -88,7 +88,7 @@ def logout():
     """Log the user out by clearing their session."""
     logout_user()
     session.clear()
-    send_abort('See you next time!', 200)
+    send_response('See you next time!', 200)
 
 
 @manage_session
@@ -98,7 +98,7 @@ def get_current_user_info():
 
     user = User.query.filter_by(temp_token=token).first()
     if not user:
-        send_abort("No user with token", 404)
+        send_response("No user with token", 404)
     user_infomration = {}
     user_info_obj = {}
 

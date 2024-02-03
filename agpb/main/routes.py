@@ -8,7 +8,7 @@ from agpb.models import Contribution, User
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
                              get_audio_file, get_serialized_data, create_contribution, commit_changes_to_db,
-                             manage_session, send_abort, generate_csrf_token,
+                             manage_session, send_response, generate_csrf_token,
                              make_edit_api_call)
 
 main = Blueprint('main', __name__)
@@ -115,7 +115,7 @@ def postContribution():
     latest_base_rev_id = 0
 
     if not username:
-        send_abort('User does not exist', 401)
+        send_response('User does not exist', 401)
 
     valid_actions = [
         'wbsetclaim',
@@ -123,7 +123,7 @@ def postContribution():
         'wbsetdescription'
     ]
     if contribution_data['edit_type'] not in valid_actions:
-        send_abort('Incorrect edit type', 401)
+        send_response('Incorrect edit type', 401)
 
     contribution = Contribution(username=username,
                                 wd_item=contribution_data['wd_item'],
@@ -143,12 +143,12 @@ def postContribution():
                                    username)
     
     if not lastrevid:
-        send_abort('Edit failed', 401)
+        send_response('Edit failed', 401)
 
     db.session.add(contribution)
     latest_base_rev_id = lastrevid
 
     if not commit_changes_to_db():
-        send_abort('Contribution not saved', 403)
+        send_response('Contribution not saved', 403)
 
-    return send_abort(str(latest_base_rev_id), 200)
+    return send_response(str(latest_base_rev_id), 200)
