@@ -194,7 +194,7 @@ def get_serialized_data(data):
 
 
 def send_response(message, error_code):
-    error_message = json.dumps({'Message': message})
+    error_message = json.dumps({'message': message})
     return abort(Response(error_message, error_code))
 
 
