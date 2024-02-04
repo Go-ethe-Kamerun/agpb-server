@@ -279,7 +279,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         params['id'] = contribution_data['wd_item']
 
     else:
-        params['action'] = 'setclaim'
+        params['action'] = 'wbsetclaim'
         params['claim'] = json.dumps(get_claim_options(contribution_data['wd_item']),
                                                        contribution_data['data'])
 
