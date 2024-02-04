@@ -272,11 +272,11 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
     params['token'] = csrf_token
     params['summary'] = username + '@' + app.config['APP_NAME']
     params['id'] = contribution_data['wd_item']
-    params['value'] = contribution_data['data']
 
     if edit_type in ['wbsetlabel', 'wbsetdescription']:
         params['action'] = 'wbsetlabel' if edit_type == 'wbsetlabel' else 'wbsetdescription'
         params['language'] = contribution_data['lang_code']
+        params['value'] = contribution_data['data']
     else:
         params['action'] = 'setclaim'
         params['claim'] = json.dumps(get_claim_options(contribution_data['wd_item']),
