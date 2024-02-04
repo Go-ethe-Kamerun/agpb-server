@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_migrate import Migrate
 
+
 app = Flask(__name__)
 
 
@@ -36,6 +37,7 @@ def get_locale():
     if request.args.get('lang'):
         session['lang'] = request.args.get('lang')
     return session.get('lang', 'en')
+
 
 db = SQLAlchemy(app)
 
@@ -72,6 +74,5 @@ from agpb.users.routes import users
 # Here we register the various blue_prints of our app
 app.register_blueprint(main)
 app.register_blueprint(users)
-
 
 app.app_context().push()
