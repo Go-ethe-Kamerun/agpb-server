@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import uuid
 import json
 import ast
 import requests
@@ -250,9 +251,10 @@ def generate_csrf_token(app_key, app_secret, user_key, user_secret):
     return CSRF_TOKEN, auth
 
 
-def get_claim_options(wd_item_id, media_file_name):  
+def get_claim_options(wd_item_id, media_file_name):
+    # generates a guid and attaches to wd_id
     return {
-        'id': wd_item_id,
+        'id': wd_item_id + '$' + uuid.uuid4(),
         'type': 'claim',
         'mainsnak': { 
             'snaktype': 'value',
@@ -280,8 +282,8 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
 
     else:
         params['action'] = 'wbsetclaim'
-        params['claim'] = json.dumps(get_claim_options(contribution_data['wd_item']),
-                                                       contribution_data['data'])
+        params['claim'] = json.dumps(get_claim_options(contribution_data['wd_item'],
+                                                       contribution_data['data']))
 
     response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
     revision_id = None
@@ -290,6 +292,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         send_response('Unable to edit item', 401)
 
     result = response.json()
+    print(result)
     entity  = result.get('entity')
     revision_id = entity.get('lastrevid')
     return revision_id
