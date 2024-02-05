@@ -310,7 +310,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         revision_id = entity.get('lastrevid')
     else:
 
-        claim_id = response['claim']['id']
+        claim_id = result['claim']['id']
         # get language item here from lang_code
         qualifier_value = get_language_qid(contribution_data['language']),
         qualifier_params = {
@@ -323,7 +323,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         }
         qual_response = requests.post(app.config['API_URL'],
                                       data=qualifier_params,
-                                      auth=api_auth_token)
+                                      auth=api_auth_token).json()
         # qual_resp_data = qual_response.json()
         if qual_response.status_code != 200:
             send_response('Qualifier could not be added', 401)
