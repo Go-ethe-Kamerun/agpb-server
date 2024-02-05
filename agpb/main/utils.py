@@ -271,7 +271,7 @@ def get_claim_options(wd_item_id, media_file_name):
 def get_language_qid(language):
     wb = Wikibase()
     items = wb.entity.search(language, 'de')
-    for item in items:
+    for item in items['search']:
         if 'description' in item.keys():
             if 'language' in item['description']:
                 return item['id']
