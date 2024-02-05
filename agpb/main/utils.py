@@ -10,6 +10,7 @@ from sqlalchemy.sql import text
 from agpb import app, db
 from flask import send_file, abort, Response
 from requests_oauthlib import OAuth1
+from wikibase_api import Wikibase
 
 from agpb.models import Category, Language, Text
 
@@ -267,6 +268,16 @@ def get_claim_options(wd_item_id, media_file_name):
     }
 
 
+def get_language_qid(language):
+    wb = Wikibase()
+    items = wb.entity.search(language, 'de')
+    for item in items:
+        if 'description' in item.keys():
+            if 'language' in item['description']:
+                return item['id']
+    return None
+
+
 def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
     edit_type = contribution_data['edit_type']
     params = {}
@@ -285,7 +296,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         params['entity'] =  contribution_data['wd_item']
         params['property'] = 'P443'
         params['snaktype'] =  'value'
-        params['value'] = contribution_data['data']
+        params['value'] = '"' + contribution_data['data'] + '"'
 
     response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
     revision_id = None
@@ -294,6 +305,29 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         send_response('Unable to edit item', 401)
 
     result = response.json()
-    entity  = result.get('entity')
-    revision_id = entity.get('lastrevid')
+    if edit_type in ['wbsetlabel', 'wbsetdescription']:
+        entity  = result.get('entity')
+        revision_id = entity.get('lastrevid')
+    else:
+
+        claim_id = response['claim']['id']
+        # get language item here from lang_code
+        qualifier_value = get_language_qid(contribution_data['language']),
+        qualifier_params = {
+            'claim': claim_id,
+            'action': 'wbsetqualifier',
+            'property': 'P407', 
+            'value': '"' + qualifier_value + '"',
+            'format': 'json',
+            'summary': username + '@' + app.config['APP_NAME']
+        }
+        qual_response = requests.post(app.config['API_URL'],
+                                      data=qualifier_params,
+                                      auth=api_auth_token)
+        # qual_resp_data = qual_response.json()
+        if qual_response.status_code != 200:
+            send_response('Qualifier could not be added', 401)
+        
+        revision_id = result.get('pageinfo').get('lastrevid')
+
     return revision_id

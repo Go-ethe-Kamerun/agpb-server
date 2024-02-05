@@ -12,3 +12,4 @@ cryptography
 Flask-Migrate
 mwoauth
 flask_login
+wikibase-api
