@@ -8,7 +8,7 @@ import requests
 import traceback
 from sqlalchemy.sql import text
 from agpb import app, db
-from flask import send_file, abort, Response
+from flask import send_file, abort, Response, session
 from requests_oauthlib import OAuth1
 from wikibase_api import Wikibase
 
@@ -312,22 +312,24 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
 
         claim_id = result['claim']['id']
         # get language item here from lang_code
-        qualifier_value = get_language_qid(contribution_data['language']),
-        qualifier_params = {
-            'claim': claim_id,
-            'action': 'wbsetqualifier',
-            'property': 'P407', 
-            'value': '"' + qualifier_value + '"',
-            'format': 'json',
-            'summary': username + '@' + app.config['APP_NAME']
-        }
+        qualifier_value = get_language_qid(contribution_data['language'])
+        qualifier_params = {}
+        qualifier_params['claim'] = claim_id
+        qualifier_params['action'] = 'wbsetqualifier'
+        qualifier_params['property'] = 'P407'
+        qualifier_params['snaktype'] = 'value'
+        qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+        qualifier_params['format'] = 'json'
+        qualifier_params['token'] = csrf_token
+        qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
+
         qual_response = requests.post(app.config['API_URL'],
                                       data=qualifier_params,
-                                      auth=api_auth_token).json()
-        # qual_resp_data = qual_response.json()
+                                      auth=api_auth_token)
+
+        qualifier_params = qual_response.json()
         if qual_response.status_code != 200:
             send_response('Qualifier could not be added', 401)
-        
         revision_id = result.get('pageinfo').get('lastrevid')
 
     return revision_id
