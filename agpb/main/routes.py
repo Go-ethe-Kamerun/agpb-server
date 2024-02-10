@@ -2,6 +2,7 @@ import json
 
 from flask import Blueprint, request, session
 from agpb import db, app
+import requests
 from agpb.models import Contribution
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
@@ -134,3 +135,34 @@ def postContribution():
         send_response('Contribution not saved', 403)
 
     return send_response(str(latest_base_rev_id), 200)
+
+
+@main.route('/api/v1/upload-file', methods=['POST'])
+def postUploadFile():
+    upload_data = request.json
+
+    username = session.get('username', None)
+    if not username:
+        send_response('User does not exist', 401)
+
+    csrf_token, api_auth_token = generate_csrf_token(
+        app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'],
+        session.get('access_token')['key'],
+        session.get('access_token')['secret']
+    )
+
+    params = {}
+    params['action'] = 'upload'
+    params['format'] = 'json'
+    params['filename'] = upload_data['filename']
+    params['token'] = csrf_token
+    params['text'] = "[[Category:African German Phrasebook " + upload_data['country'] + "]]"
+    params['file'] = open(upload_data['file'], 'rb')
+
+    response = requests.post(app.config['UPLOAD_API_URL'], data=params, auth=api_auth_token)
+
+    if response.status_code != 200:
+        send_response('File was not uploaded', 401)
+    
+    result = response.json()
+    return result

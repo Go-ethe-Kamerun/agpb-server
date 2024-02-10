@@ -74,8 +74,9 @@ def oauth_callback():
         user = User.query.filter_by(username=session.get('username')).first()
         user.temp_token = generate_random_token()
         bearer_token = request.args.get('oauth_token')
-        response = redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
-        response.headers['Authorization'] = 'Bearer ' +  str(bearer_token)
+        redirect_base_url = app.config['DEV_FE_URL'] if app.config['IS_DEV'] else app.config['PROD_FE_URL']
+        response = redirect(redirect_base_url + "/oauth/callback?token=" + str(user.temp_token), code=302)
+        session['bearer'] = bearer_token
         if commit_changes_to_db():
             login_user(user)
             return response
@@ -105,6 +106,7 @@ def get_current_user_info():
     user_info_obj['username'] = user.username
     user_info_obj['lang'] = user.pref_lang
     user_info_obj['token'] = user.temp_token
+    user_info_obj['bearer'] = session.get('bearer', None)
 
     user_infomration['user'] = user_info_obj
     return json.dumps(user_infomration)
