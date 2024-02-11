@@ -93,12 +93,17 @@ def getContributions():
 @main.route('/api/v1/post-contribution', methods=['POST'])
 def postContribution():
     contribution_data = request.json
-    username = session.get('username', None)
-
+    session_bearer = session.get('bearer', None)
+    bearer = request.headers.get('bearer', None)
     latest_base_rev_id = 0
 
+    if session_bearer != bearer:
+        send_response('User cannot be verified', 401)
+
+    username = session.get('username', None)
+
     if not username:
-        send_response('User does not exist', 401)
+        send_response('User does not exist: please try to login', 401)
 
     valid_actions = [
         'wbsetclaim',
@@ -141,6 +146,17 @@ def postContribution():
 def postUploadFile():
     upload_data = request.json
 
+    session_bearer = session.get('bearer', None)
+    header_bearer = request.headers.get('bearer', None)
+
+    if session_bearer != header_bearer:
+        send_response('User cannot be verified', 401)
+
+    username = session.get('username', None)
+
+    if not username:
+        send_response('User does not exist: please try to login', 401)
+
     username = session.get('username', None)
     if not username:
         send_response('User does not exist', 401)
@@ -163,6 +179,6 @@ def postUploadFile():
 
     if response.status_code != 200:
         send_response('File was not uploaded', 401)
-    
+
     result = response.json()
     return result
