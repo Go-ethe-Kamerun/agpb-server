@@ -8,7 +8,7 @@ import requests
 import traceback
 from sqlalchemy.sql import text
 from agpb import app, db
-from flask import send_file, abort, Response, make_response
+from flask import send_file, abort, Response
 from requests_oauthlib import OAuth1
 from wikibase_api import Wikibase
 
@@ -196,7 +196,8 @@ def get_serialized_data(data):
 
 
 def send_response(message, error_code):
-    return make_response({'message': message}, error_code)
+    error_message = json.dumps({'message': message})
+    return abort(Response(error_message, error_code))
 
 
 def manage_session(f):
