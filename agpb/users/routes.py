@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, redirect, request, session, url_for
+from flask import Blueprint, redirect, request, session, url_for, make_response
 from flask_login import current_user, login_user, logout_user
 import mwoauth
 
@@ -106,7 +106,9 @@ def get_current_user_info():
     user_info_obj['username'] = user.username
     user_info_obj['lang'] = user.pref_lang
     user_info_obj['token'] = user.temp_token
-    user_info_obj['bearer'] = session.get('bearer', None)
-
     user_infomration['user'] = user_info_obj
-    return json.dumps(user_infomration)
+
+    response = make_response(user_infomration)
+    response.headers['bearer'] = session.get('bearer', None)
+
+    return response
