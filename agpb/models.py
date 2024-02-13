@@ -81,6 +81,6 @@ class User(db.Model,UserMixin, Serializer):
 
     def __repr__(self):
         # This is what is shown when object is printed
-        return "User({}, {}, {})".format(
+        return "User({}, {})".format(
                 self.username,
                 self.pref_lang)
