@@ -98,7 +98,6 @@ def get_current_user_info():
     token = request.args.get('token')
 
     user = User.query.filter_by(temp_token=token).first()
-    print(user)
     if not user:
         send_response("No user with token", 404)
     user_infomration = {}

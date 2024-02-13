@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, request, session
 from agpb import db, app
 import requests
-from agpb.models import Contribution
+from agpb.models import Contribution, User
 
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
                              get_audio_file, get_serialized_data, commit_changes_to_db,
@@ -95,12 +95,13 @@ def postContribution():
     contribution_data = request.json
     session_bearer = session.get('bearer', None)
     bearer = request.headers.get('bearer', None)
+    user_v_token = request.headers.get('vtoken', None)
     latest_base_rev_id = 0
 
     if session_bearer != bearer:
         send_response('User cannot be verified', 401)
 
-    username = session.get('username', None)
+    username = User.query.filter_by(temp_token=user_v_token).first()
 
     if not username:
         send_response('User does not exist: please try to login', 401)
@@ -145,14 +146,14 @@ def postContribution():
 @main.route('/api/v1/upload-file', methods=['POST'])
 def postUploadFile():
     upload_data = request.json
-
+    user_v_token = request.headers.get('vtoken', None)
     session_bearer = session.get('bearer', None)
     header_bearer = request.headers.get('bearer', None)
 
     if session_bearer != header_bearer:
         send_response('User cannot be verified', 401)
 
-    username = session.get('username', None)
+    username = User.query.filter_by(temp_token=user_v_token).first()
 
     if not username:
         send_response('User does not exist: please try to login', 401)
