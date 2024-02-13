@@ -125,7 +125,7 @@ def postContribution():
                 session.get('access_token')['key'],
                 session.get('access_token')['secret']
             )
-    
+
     lastrevid = make_edit_api_call(csrf_token,
                                    api_auth_token,
                                    contribution_data,

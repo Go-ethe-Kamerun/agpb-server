@@ -77,6 +77,7 @@ def oauth_callback():
         redirect_base_url = app.config['DEV_FE_URL'] if app.config['IS_DEV'] else app.config['PROD_FE_URL']
         response = redirect(redirect_base_url + "/oauth/callback?token=" + str(user.temp_token), code=302)
         session['bearer'] = bearer_token
+        response.headers['Cookie'] = request.cookies.get('session')
         if commit_changes_to_db():
             login_user(user)
             return response
