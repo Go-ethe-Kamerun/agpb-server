@@ -108,8 +108,7 @@ def get_current_user_info():
     user_info_obj['lang'] = user.pref_lang
     user_info_obj['token'] = user.temp_token
     user_infomration['user'] = user_info_obj
+    user_infomration['bearer'] = session.get('bearer', None)
 
     response = make_response(user_infomration)
-    response.headers['bearer'] = session.get('bearer', None)
-
     return response
