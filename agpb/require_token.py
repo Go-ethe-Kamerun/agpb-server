@@ -1,13 +1,12 @@
 from flask import request, jsonify
 from functools import wraps
-import uuid
 import jwt
-import datetime
 from agpb import app
 from agpb.models import User
 
 
 def token_required(f):
+    @wraps(f)
     def inner(*args, **kwargs):
 
         token = None
