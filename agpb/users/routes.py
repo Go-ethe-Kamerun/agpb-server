@@ -25,7 +25,7 @@ def login():
     """
     if current_user.is_authenticated:
         user = User.query.filter_by(username=current_user.username).first()
-        return jsonify({'token' : user.temp_token})
+        return jsonify({'token': user.temp_token})
     else:
         consumer_token = mwoauth.ConsumerToken(
             app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'])
@@ -79,13 +79,15 @@ def oauth_callback():
 
         token = jwt.encode({
                 'token' : user.temp_token,
-                'access_token': session['access_token'],
+                'access_token': session.get('access_token', None),
                 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)},
                 app.config['SECRET_KEY'], "HS256")
 
         if commit_changes_to_db():
             login_user(user)
-            return jsonify({'token' : token})
+            redirect_base_url = app.config['DEV_FE_URL'] if app.config['IS_DEV'] else app.config['PROD_FE_URL']
+            response = redirect(redirect_base_url + "/oauth/callback?token=" + str(token), code=302)
+            return response
 
         # User token was not generated
         send_response('Error adding user to database', 401)
@@ -101,7 +103,7 @@ def logout():
 
 @users.route('/api/v1/current_user', methods=['GET','POST'])
 @token_required
-def get_current_user_info(current_user):
+def get_current_user_info(current_user, data):
     user_infomration = {}
     user_info_obj = {}
 
