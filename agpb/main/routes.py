@@ -81,10 +81,11 @@ def getTranslations():
 @manage_session
 @main.route('/api/v1/contributions')
 @token_required
-def getContributions(current_user):
+def getContributions(current_user, data):
     '''
     Get contributions
     '''
+    token_data = data
     contributions = get_serialized_data(Contribution.query.all())
     username = request.args.get('username')
     if username:
@@ -93,17 +94,13 @@ def getContributions(current_user):
 
 
 @main.route('/api/v1/post-contribution', methods=['POST'])
-def postContribution():
+@token_required
+def postContribution(current_user, data):
     contribution_data = request.json
-    session_bearer = session.get('bearer', None)
-    bearer = request.headers.get('bearer', None)
-    user_v_token = request.headers.get('vtoken', None)
     latest_base_rev_id = 0
 
-    if session_bearer != bearer:
-        send_response('User cannot be verified', 401)
 
-    username = User.query.filter_by(temp_token=user_v_token).first()
+    username = User.query.filter_by(temp_token=current_user.temp_token).first()
 
     if not username:
         send_response('User does not exist: please try to login', 401)
@@ -124,8 +121,8 @@ def postContribution():
 
     csrf_token, api_auth_token = generate_csrf_token(
                 app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'],
-                session.get('access_token')['key'],
-                session.get('access_token')['secret']
+                data.get('access_token')['key'],
+                data.get('access_token')['secret']
             )
 
     lastrevid = make_edit_api_call(csrf_token,
@@ -146,16 +143,10 @@ def postContribution():
 
 
 @main.route('/api/v1/upload-file', methods=['POST'])
-def postUploadFile():
+@token_required
+def postUploadFile(current_user, data):
     upload_data = request.json
-    user_v_token = request.headers.get('vtoken', None)
-    session_bearer = session.get('bearer', None)
-    header_bearer = request.headers.get('bearer', None)
-
-    if session_bearer != header_bearer:
-        send_response('User cannot be verified', 401)
-
-    username = User.query.filter_by(temp_token=user_v_token).first()
+    username = User.query.filter_by(temp_token=current_user.temp_token).first()
 
     if not username:
         send_response('User does not exist: please try to login', 401)
@@ -166,8 +157,8 @@ def postUploadFile():
 
     csrf_token, api_auth_token = generate_csrf_token(
         app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'],
-        session.get('access_token')['key'],
-        session.get('access_token')['secret']
+        data.get('access_token')['key'],
+        data.get('access_token')['secret']
     )
 
     params = {}
