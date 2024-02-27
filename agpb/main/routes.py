@@ -4,7 +4,7 @@ from flask import Blueprint, request, session
 from agpb import db, app
 import requests
 from agpb.models import Contribution, User
-
+from agpb.require_token import token_required
 from agpb.main.utils import (get_category_data, get_language_data, get_translation_data,
                              get_audio_file, get_serialized_data, commit_changes_to_db,
                              manage_session, send_response, generate_csrf_token,
@@ -77,9 +77,11 @@ def getTranslations():
         return '<h2> Unable to get Translation data at the moment</h2>'
 
 
+
 @manage_session
 @main.route('/api/v1/contributions')
-def getContributions():
+@token_required
+def getContributions(current_user):
     '''
     Get contributions
     '''

@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, redirect, request, session, url_for, make_response
+from flask import Blueprint, redirect, request, session, url_for, make_response, jsonify
 from flask_login import current_user, login_user, logout_user
 import mwoauth
 
@@ -8,7 +8,10 @@ from agpb import app, db
 from agpb.models import User
 from agpb.main.utils import commit_changes_to_db, send_response, manage_session
 from agpb.users.utils import generate_random_token
+from agpb.require_token import token_required
 
+import jwt
+import datetime
 
 users = Blueprint('users', __name__)
 
@@ -22,7 +25,7 @@ def login():
     """
     if current_user.is_authenticated:
         user = User.query.filter_by(username=current_user.username).first()
-        return redirect("https://agpb.toolforge.org/oauth/callback?token=" + str(user.temp_token), code=302)
+        return jsonify({'token' : user.temp_token})
     else:
         consumer_token = mwoauth.ConsumerToken(
             app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'])
@@ -73,14 +76,17 @@ def oauth_callback():
         # In this case, handshake is finished and we redirect
         user = User.query.filter_by(username=session.get('username')).first()
         user.temp_token = generate_random_token()
-        bearer_token = request.args.get('oauth_token')
-        redirect_base_url = app.config['DEV_FE_URL'] if app.config['IS_DEV'] else app.config['PROD_FE_URL']
-        response = redirect(redirect_base_url + "/oauth/callback?token=" + str(user.temp_token), code=302)
-        session['bearer'] = bearer_token
-        response.headers['Cookie'] = request.cookies.get('session')
+
+        token = jwt.encode({
+                'token' : user.temp_token,
+                'access_token': session['access_token'],
+                'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)},
+                app.config['SECRET_KEY'], "HS256")
+
         if commit_changes_to_db():
             login_user(user)
-            return response
+            return jsonify({'token' : token})
+
         # User token was not generated
         send_response('Error adding user to database', 401)
 
@@ -93,22 +99,16 @@ def logout():
     send_response('See you next time!', 200)
 
 
-@manage_session
-@users.route('/api/v1/verify_token', methods=['GET','POST'])
-def get_current_user_info():
-    token = request.args.get('token')
-
-    user = User.query.filter_by(temp_token=token).first()
-    if not user:
-        send_response("No user with token", 404)
+@users.route('/api/v1/current_user', methods=['GET','POST'])
+@token_required
+def get_current_user_info(current_user):
     user_infomration = {}
     user_info_obj = {}
 
-    user_info_obj['username'] = user.username
-    user_info_obj['lang'] = user.pref_lang
-    user_info_obj['token'] = user.temp_token
+    user_info_obj['username'] = current_user.username
+    user_info_obj['lang'] = current_user.pref_lang
+    user_info_obj['token'] = current_user.temp_token
     user_infomration['user'] = user_info_obj
-    user_infomration['bearer'] = session.get('bearer', None)
 
     response = make_response(user_infomration)
     return response
