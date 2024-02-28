@@ -100,9 +100,9 @@ def postContribution(current_user, data):
     latest_base_rev_id = 0
 
 
-    username = User.query.filter_by(temp_token=current_user.temp_token).first()
+    user = User.query.filter_by(temp_token=current_user.temp_token).first()
 
-    if not username:
+    if not user:
         send_response('User does not exist: please try to login', 401)
 
     valid_actions = [
@@ -113,7 +113,7 @@ def postContribution(current_user, data):
     if contribution_data['edit_type'] not in valid_actions:
         send_response('Incorrect edit type', 401)
 
-    contribution = Contribution(username=username,
+    contribution = Contribution(username=user.username,
                                 wd_item=contribution_data['wd_item'],
                                 lang_code=contribution_data['lang_code'],
                                 edit_type=contribution_data['edit_type'],
@@ -128,7 +128,7 @@ def postContribution(current_user, data):
     lastrevid = make_edit_api_call(csrf_token,
                                    api_auth_token,
                                    contribution_data,
-                                   username)
+                                   user.username)
     
     if not lastrevid:
         send_response('Edit failed', 401)
