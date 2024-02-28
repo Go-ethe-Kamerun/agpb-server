@@ -305,11 +305,11 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         send_response('Unable to edit item', 401)
 
     result = response.json()
-    if edit_type in ['wbsetlabel', 'wbsetdescription']:
-        entity  = result.get('entity')
-        revision_id = entity.get('lastrevid')
-    else:
+    if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in result.keys():
+        entity  = result.get('entity', None)
+        revision_id = entity.get('lastrevid', None)
 
+    else:
         claim_id = result['claim']['id']
         # get language item here from lang_code
         qualifier_value = get_language_qid(contribution_data['language'])
@@ -330,6 +330,7 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         qualifier_params = qual_response.json()
         if qual_response.status_code != 200:
             send_response('Qualifier could not be added', 401)
-        revision_id = result.get('pageinfo').get('lastrevid')
+        if 'success' in result.keys():
+            revision_id = result.get('pageinfo').get('lastrevid', None)
 
     return revision_id
