@@ -11,7 +11,6 @@ from agpb import app, db
 from flask import send_file, abort, Response
 from requests_oauthlib import OAuth1
 from wikibase_api import Wikibase
-
 from agpb.models import Category, Language, Text
 
 
@@ -298,39 +297,42 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
         params['snaktype'] =  'value'
         params['value'] = '"' + contribution_data['data'] + '"'
 
-    response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
     revision_id = None
 
-    if response.status_code != 200:
-        send_response('Unable to edit item', 401)
+    try:
+        response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
+        if response.status_code != 200:
+            send_response('Unable to edit item', 401)
 
-    result = response.json()
-    if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in result.keys():
-        entity  = result.get('entity', None)
-        revision_id = entity.get('lastrevid', None)
+        result = response.json()
+        if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in result.keys():
+            entity  = result.get('entity', None)
+            revision_id = entity.get('lastrevid', None)
 
-    else:
-        claim_id = result['claim']['id']
-        # get language item here from lang_code
-        qualifier_value = get_language_qid(contribution_data['language'])
-        qualifier_params = {}
-        qualifier_params['claim'] = claim_id
-        qualifier_params['action'] = 'wbsetqualifier'
-        qualifier_params['property'] = 'P407'
-        qualifier_params['snaktype'] = 'value'
-        qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
-        qualifier_params['format'] = 'json'
-        qualifier_params['token'] = csrf_token
-        qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
+        else:
+            claim_id = result['claim']['id']
+            # get language item here from lang_code
+            qualifier_value = get_language_qid(contribution_data['language'])
+            qualifier_params = {}
+            qualifier_params['claim'] = claim_id
+            qualifier_params['action'] = 'wbsetqualifier'
+            qualifier_params['property'] = 'P407'
+            qualifier_params['snaktype'] = 'value'
+            qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+            qualifier_params['format'] = 'json'
+            qualifier_params['token'] = csrf_token
+            qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-        qual_response = requests.post(app.config['API_URL'],
-                                      data=qualifier_params,
-                                      auth=api_auth_token)
+            qual_response = requests.post(app.config['API_URL'],
+                                        data=qualifier_params,
+                                        auth=api_auth_token)
 
-        qualifier_params = qual_response.json()
-        if qual_response.status_code != 200:
-            send_response('Qualifier could not be added', 401)
-        if 'success' in result.keys():
-            revision_id = result.get('pageinfo').get('lastrevid', None)
+            qualifier_params = qual_response.json()
+            if qual_response.status_code != 200:
+                send_response('Qualifier could not be added', 401)
+            if 'success' in result.keys():
+                revision_id = result.get('pageinfo').get('lastrevid', None)
 
-    return revision_id
+        return revision_id
+    except Exception as e:
+        return send_response(result['error']['info'], 400)
