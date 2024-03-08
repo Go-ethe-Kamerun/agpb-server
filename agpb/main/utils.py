@@ -277,7 +277,28 @@ def get_language_qid(language):
     return None
 
 
-def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
+def upload_file(upload_data, upload_file, csrf_token, api_auth_token):
+
+    params = {}
+    params['action'] = 'upload'
+    params['format'] = 'json'
+    params['filename'] = upload_data['wd_item'] + '-' + upload_data['trans_label'] \
+                    + '(' + upload_data['trans_label'] + ').wav'
+    upload_data['filename'] # compoe based on provided data.wav
+    params['token'] = csrf_token
+    params['text'] = "[[Category:" + upload_data['language'] + " pronunciation]]"
+    params['file'] = open(upload_file, 'rb')
+
+    response = requests.post(app.config['UPLOAD_API_URL'], data=params, auth=api_auth_token)
+
+    if response.status_code != 200:
+        send_response('File was not uploaded', 401)
+
+    result = response.json()
+    return result
+
+
+def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username, audio_file=None):
     edit_type = contribution_data['edit_type']
     params = {}
     params['format'] = 'json'
@@ -310,29 +331,31 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username):
             revision_id = entity.get('lastrevid', None)
 
         else:
-            claim_id = result['claim']['id']
-            # get language item here from lang_code
-            qualifier_value = get_language_qid(contribution_data['language'])
-            qualifier_params = {}
-            qualifier_params['claim'] = claim_id
-            qualifier_params['action'] = 'wbsetqualifier'
-            qualifier_params['property'] = 'P407'
-            qualifier_params['snaktype'] = 'value'
-            qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
-            qualifier_params['format'] = 'json'
-            qualifier_params['token'] = csrf_token
-            qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
+            # upload file here before adding qualifier
+            upload_result = upload_file(contribution_data, audio_file, csrf_token, api_auth_token)
+            if 'success' in upload_result.keys():
+                claim_id = result['claim']['id']
+                # get language item here from lang_code
+                qualifier_value = get_language_qid(contribution_data['language'])
+                qualifier_params = {}
+                qualifier_params['claim'] = claim_id
+                qualifier_params['action'] = 'wbsetqualifier'
+                qualifier_params['property'] = 'P407'
+                qualifier_params['snaktype'] = 'value'
+                qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+                qualifier_params['format'] = 'json'
+                qualifier_params['token'] = csrf_token
+                qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-            qual_response = requests.post(app.config['API_URL'],
-                                        data=qualifier_params,
-                                        auth=api_auth_token)
+                qual_response = requests.post(app.config['API_URL'],
+                                            data=qualifier_params,
+                                            auth=api_auth_token)
 
-            qualifier_params = qual_response.json()
-            if qual_response.status_code != 200:
-                send_response('Qualifier could not be added', 401)
-            if 'success' in result.keys():
-                revision_id = result.get('pageinfo').get('lastrevid', None)
-
+                qualifier_params = qual_response.json()
+                if qual_response.status_code != 200:
+                    send_response('Qualifier could not be added', 401)
+                if 'success' in result.keys():
+                    revision_id = result.get('pageinfo').get('lastrevid', None)
         return revision_id
     except Exception as e:
         return send_response(result['error']['info'], 400)

@@ -97,7 +97,6 @@ def oauth_callback():
 def logout():
     """Log the user out by clearing their session."""
     logout_user()
-    session.clear()
     send_response('See you next time!', 200)
 
 
