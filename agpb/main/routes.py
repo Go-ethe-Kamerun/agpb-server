@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request
 from agpb import db, app
 import requests
 from agpb.models import Contribution, User
@@ -96,41 +96,40 @@ def getContributions(current_user, data):
 @main.route('/api/v1/post-contribution', methods=['POST'])
 @token_required
 def postContribution(current_user, data):
-    contribution_data = request.json
-    audio_file = request.data
     latest_base_rev_id = 0
 
+    wd_item = request.form.get('wd_item')
+    edit_type = request.form.get('edit_type')
+    language = request.form.get('lang_code')
+    upload_file = request.files['data'].read()
 
-    user = User.query.filter_by(temp_token=current_user.temp_token).first()
-
-    if not user:
-        send_response('User does not exist: please try to login', 401)
+    #file_name = request.files['data'].filename
+    file_name = '(' + wd_item + ')'+ language + 'file.ogg'
+    contrib_data = upload_file if edit_type == 'wbsetclaim' else request.form.get('text')
 
     valid_actions = [
         'wbsetclaim',
         'wbsetlabel',
         'wbsetdescription'
     ]
-    if contribution_data['edit_type'] not in valid_actions:
+    if edit_type not in valid_actions:
         send_response('Incorrect edit type', 401)
 
-    contribution = Contribution(username=user.username,
-                                wd_item=contribution_data['wd_item'],
-                                lang_code=contribution_data['lang_code'],
-                                edit_type=contribution_data['edit_type'],
-                                data=contribution_data['data'])
+    contribution = Contribution(username=current_user.username,
+                                wd_item=wd_item,
+                                lang_code=language,
+                                edit_type=edit_type,
+                                data=file_name if edit_type == 'wbsetclaim' else request.form.get('text'))
 
-    csrf_token, api_auth_token = generate_csrf_token(
-                app.config['CONSUMER_KEY'], app.config['CONSUMER_SECRET'],
-                data.get('access_token')['key'],
-                data.get('access_token')['secret']
-            )
+    auth_obj = {
+        "consumer_key": app.config['CONSUMER_KEY'],
+        "consumer_secret": app.config['CONSUMER_SECRET'],
+        "access_token": data.get('access_token')['key'],
+        "access_secret": data.get('access_token')['secret'],
+    }
 
-    lastrevid = make_edit_api_call(csrf_token,
-                                   api_auth_token,
-                                   contribution_data,
-                                   audio_file,
-                                   user.username)
+    lastrevid = make_edit_api_call(edit_type, current_user.username,language,
+                                    contrib_data, wd_item, auth_obj, file_name=file_name)
     
     if not lastrevid:
         send_response('Edit failed', 401)

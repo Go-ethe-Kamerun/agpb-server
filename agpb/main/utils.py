@@ -4,6 +4,7 @@ import sys
 import uuid
 import json
 import ast
+import io
 import requests
 import traceback
 from sqlalchemy.sql import text
@@ -225,7 +226,7 @@ def manage_session(f):
 
 
 
-def generate_csrf_token(app_key, app_secret, user_key, user_secret):
+def generate_csrf_token(url, app_key, app_secret, user_key, user_secret):
     '''
     Generate CSRF token for edit request
 
@@ -239,7 +240,7 @@ def generate_csrf_token(app_key, app_secret, user_key, user_secret):
     auth = OAuth1(app_key, app_secret, user_key, user_secret)
 
     # Get token
-    token_request = requests.get(app.config['API_URL'], params={
+    token_request = requests.get(url, params={
         'action': 'query',
         'meta': 'tokens',
         'format': 'json',
@@ -277,29 +278,38 @@ def get_language_qid(language):
     return None
 
 
-def upload_file(upload_data, upload_file, csrf_token, api_auth_token):
+def upload_file(file_data, language, auth_obj, file_name):
+    csrf_token, api_auth_token = generate_csrf_token(app.config['UPLOAD_API_URL'],
+                                                auth_obj['consumer_key'],
+                                                auth_obj['consumer_secret'],
+                                                auth_obj['access_token'],
+                                                auth_obj['access_secret'])
 
     params = {}
     params['action'] = 'upload'
     params['format'] = 'json'
-    params['filename'] = upload_data['wd_item'] + '-' + upload_data['trans_label'] \
-                    + '(' + upload_data['trans_label'] + ').wav'
-    upload_data['filename'] # compoe based on provided data.wav
+    params['filename'] = file_name
     params['token'] = csrf_token
-    params['text'] = "[[Category:" + upload_data['language'] + " pronunciation]]"
-    params['file'] = open(upload_file, 'rb')
+    params['text'] = "[[Category:" + language + " pronunciation]]"
 
-    response = requests.post(app.config['UPLOAD_API_URL'], data=params, auth=api_auth_token)
-
+    response = requests.post(app.config['UPLOAD_API_URL'],
+                            data=params,
+                            auth=api_auth_token,
+                            files={'file': io.BytesIO(file_data)})
     if response.status_code != 200:
         send_response('File was not uploaded', 401)
-
-    result = response.json()
-    return result
+    return response
 
 
-def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username, audio_file=None):
-    edit_type = contribution_data['edit_type']
+def make_edit_api_call(edit_type, username,language,
+                       data, wd_item, auth_object, file_name):
+
+    csrf_token, api_auth_token = generate_csrf_token(app.config['API_URL'],
+                                                 auth_object['consumer_key'],
+                                                 auth_object['consumer_secret'],
+                                                 auth_object['access_token'],
+                                                 auth_object['access_secret'])
+    edit_type = edit_type
     params = {}
     params['format'] = 'json'
     params['token'] = csrf_token
@@ -307,55 +317,53 @@ def make_edit_api_call(csrf_token, api_auth_token, contribution_data, username, 
 
     if edit_type in ['wbsetlabel', 'wbsetdescription']:
         params['action'] = 'wbsetlabel' if edit_type == 'wbsetlabel' else 'wbsetdescription'
-        params['language'] = contribution_data['lang_code']
-        params['value'] = contribution_data['data']
-        params['id'] = contribution_data['wd_item']
+        params['language'] = language
+        params['value'] = data
+        params['id'] = wd_item
 
     else:
         params['action'] = 'wbcreateclaim'
-        params['entity'] =  contribution_data['wd_item']
+        params['entity'] =  wd_item
         params['property'] = 'P443'
         params['snaktype'] =  'value'
-        params['value'] = '"' + contribution_data['data'] + '"'
+        params['value'] = '"' + file_name + '"'
 
     revision_id = None
 
-    try:
-        response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
-        if response.status_code != 200:
-            send_response('Unable to edit item', 401)
+    claim_response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
+    if claim_response.status_code != 200:
+        send_response('Unable to edit item', 401)
 
-        result = response.json()
-        if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in result.keys():
-            entity  = result.get('entity', None)
-            revision_id = entity.get('lastrevid', None)
+    claim_result = claim_response.json()
+    if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in claim_result.keys():
+        entity  = claim_result.get('entity', None)
+        revision_id = entity.get('lastrevid', None)
 
-        else:
-            # upload file here before adding qualifier
-            upload_result = upload_file(contribution_data, audio_file, csrf_token, api_auth_token)
-            if 'success' in upload_result.keys():
-                claim_id = result['claim']['id']
-                # get language item here from lang_code
-                qualifier_value = get_language_qid(contribution_data['language'])
-                qualifier_params = {}
-                qualifier_params['claim'] = claim_id
-                qualifier_params['action'] = 'wbsetqualifier'
-                qualifier_params['property'] = 'P407'
-                qualifier_params['snaktype'] = 'value'
-                qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
-                qualifier_params['format'] = 'json'
-                qualifier_params['token'] = csrf_token
-                qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
+    else:
+        # upload file here before adding qualifier
+        upload_response = upload_file(data, language, auth_object, file_name)
+        if upload_response.status_code == 200:
 
-                qual_response = requests.post(app.config['API_URL'],
-                                            data=qualifier_params,
-                                            auth=api_auth_token)
+            # get language item here from lang_code
+            qualifier_value = get_language_qid(language)
+            qualifier_params = {}
+            qualifier_params['claim'] = claim_result['claim']['id']
+            qualifier_params['action'] = 'wbsetqualifier'
+            qualifier_params['property'] = 'P407'
+            qualifier_params['snaktype'] = 'value'
+            qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+            qualifier_params['format'] = 'json'
+            qualifier_params['token'] = csrf_token
+            qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-                qualifier_params = qual_response.json()
-                if qual_response.status_code != 200:
-                    send_response('Qualifier could not be added', 401)
-                if 'success' in result.keys():
-                    revision_id = result.get('pageinfo').get('lastrevid', None)
-        return revision_id
-    except Exception as e:
-        return send_response(result['error']['info'], 400)
+            qual_response = requests.post(app.config['API_URL'],
+                                         data=qualifier_params,
+                                         auth=api_auth_token)
+
+            qualifier_params = qual_response.json()
+
+            if qual_response.status_code != 200:
+                send_response('Qualifier could not be added', 401)
+            if 'success' in qualifier_params.keys():
+                revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
+    return revision_id
