@@ -101,17 +101,19 @@ def postContribution(current_user, data):
     wd_item = request.form.get('wd_item')
     edit_type = request.form.get('edit_type')
     language = request.form.get('lang_code')
-    upload_file = request.files['data'].read()
+    upload_file = request.files['data'].read() if request.files else b''
 
-    #file_name = request.files['data'].filename
-    file_name = '(' + wd_item + ')'+ language + 'file.ogg'
-    contrib_data = upload_file if edit_type == 'wbsetclaim' else request.form.get('text')
+    file_name = request.files['data'].filename.split('.')[0] + '.ogg' if request.files else None
+    contrib_data = upload_file if edit_type == 'wbsetclaim' else request.form.get('data')
+
+    print('all data obtained')
 
     valid_actions = [
         'wbsetclaim',
         'wbsetlabel',
         'wbsetdescription'
     ]
+    print('edit_type', edit_type)
     if edit_type not in valid_actions:
         send_response('Incorrect edit type', 401)
 

@@ -69,10 +69,12 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 # we import all our blueprint routes here
 from agpb.main.routes import main
 from agpb.users.routes import users
+from agpb.wikidata.routes import wikidata
 
 
 # Here we register the various blue_prints of our app
 app.register_blueprint(main)
 app.register_blueprint(users)
+app.register_blueprint(wikidata)
 
 app.app_context().push()

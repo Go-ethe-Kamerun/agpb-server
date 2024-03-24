@@ -284,7 +284,6 @@ def upload_file(file_data, language, auth_obj, file_name):
                                                 auth_obj['consumer_secret'],
                                                 auth_obj['access_token'],
                                                 auth_obj['access_secret'])
-
     params = {}
     params['action'] = 'upload'
     params['format'] = 'json'
@@ -330,40 +329,46 @@ def make_edit_api_call(edit_type, username,language,
 
     revision_id = None
 
+    if edit_type not in ['wbsetlabel', 'wbsetdescription']: # we upload a file
+        upload_response = upload_file(data, language, auth_object, file_name)
+
+        if upload_response.status_code != 200:
+            send_response('Upload failed', 401)
+
+    print('doing a claim now', params)
     claim_response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
+
+    print('claim_response', claim_response.json())
     if claim_response.status_code != 200:
         send_response('Unable to edit item', 401)
 
     claim_result = claim_response.json()
+
     if edit_type in ['wbsetlabel', 'wbsetdescription'] and 'success' in claim_result.keys():
         entity  = claim_result.get('entity', None)
         revision_id = entity.get('lastrevid', None)
 
     else:
-        # upload file here before adding qualifier
-        upload_response = upload_file(data, language, auth_object, file_name)
-        if upload_response.status_code == 200:
+        # get language item here from lang_code
+        qualifier_value = get_language_qid(language)
+        qualifier_params = {}
+        qualifier_params['claim'] = claim_result['claim']['id']
+        qualifier_params['action'] = 'wbsetqualifier'
+        qualifier_params['property'] = 'P407'
+        qualifier_params['snaktype'] = 'value'
+        qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+        qualifier_params['format'] = 'json'
+        qualifier_params['token'] = csrf_token
+        qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-            # get language item here from lang_code
-            qualifier_value = get_language_qid(language)
-            qualifier_params = {}
-            qualifier_params['claim'] = claim_result['claim']['id']
-            qualifier_params['action'] = 'wbsetqualifier'
-            qualifier_params['property'] = 'P407'
-            qualifier_params['snaktype'] = 'value'
-            qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
-            qualifier_params['format'] = 'json'
-            qualifier_params['token'] = csrf_token
-            qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
+        qual_response = requests.post(app.config['API_URL'],
+                                        data=qualifier_params,
+                                        auth=api_auth_token)
 
-            qual_response = requests.post(app.config['API_URL'],
-                                         data=qualifier_params,
-                                         auth=api_auth_token)
+        qualifier_params = qual_response.json()
 
-            qualifier_params = qual_response.json()
-
-            if qual_response.status_code != 200:
-                send_response('Qualifier could not be added', 401)
-            if 'success' in qualifier_params.keys():
-                revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
+        if qual_response.status_code != 200:
+            send_response('Qualifier could not be added', 401)
+        if 'success' in qualifier_params.keys():
+            revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
     return revision_id
