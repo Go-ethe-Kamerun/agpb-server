@@ -5,6 +5,7 @@ from flask_cors import cross_origin
 from .handle_languages import getLanguages
 from .handle_search import get_wikidata_entity_data, get_search_data
 from .utils import process_translations_data
+from agpb.require_token import token_required
 
 wikidata = Blueprint('wikidata', __name__)
 
@@ -24,7 +25,8 @@ def get_search_Items():
 
 
 @wikidata.route('/search', methods=['GET', 'POST'])
-def make_search():
+@token_required
+def make_search(current_user, data):
     wd_id = request.args.get('wd_id')
     base_language = request.args.get('base_lang')
     dest_language_one = request.args.get('dest_lang_one')

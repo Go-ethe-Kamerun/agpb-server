@@ -23,7 +23,7 @@ def make_wd_api_search(search_term, lang):
         "search": search_term
     }
 
-    wd_search_results = make_api_request(app.config['WD_API_URL'], PARAMS)
+    wd_search_results = make_api_request(app.config['API_URL'], PARAMS)
     search_result_data = build_search_result(wd_search_results['search'])
 
     return search_result_data
@@ -49,7 +49,7 @@ def get_wikidata_entity_data(wd_id, props, langs):
     }
 
 
-    entityies_data = utils.make_api_request(app.config["WD_API_URL"], PARAMS)
+    entityies_data = make_api_request(app.config["API_URL"], PARAMS)
 
     if "entities" in entityies_data.keys():
         return entityies_data["entities"]
@@ -79,7 +79,7 @@ def  get_language_data(wd_lang_id):
         "entity": wd_lang_id
     }
 
-    lang_data = utils.make_api_request(app.config["WD_API_URL"], PARAMS)
+    lang_data = make_api_request(app.config["API_URL"], PARAMS)
     return lang_data['claims']
 
 
@@ -91,7 +91,7 @@ def get_image_url(image):
         "iiprop": "url",
         "format": "json"
     }
-    image_data = utils.make_api_request(app.config["API_URL"], PARAMS)
+    image_data = make_api_request(app.config["API_URL"], PARAMS)
     image_id = list(image_data["query"]["pages"].keys())[0]
     if image_id:
         return image_data["query"]["pages"][image_id]["imageinfo"][0]["url"]
