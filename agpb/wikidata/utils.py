@@ -47,6 +47,7 @@ def build_search_result(search_result):
 
 
 def process_translations_data(translations_data, descriptions_data, wd_id, langs):
+    print('now processing translations')
     translations_data_list = {}
     translations_data_list['translations'] = []
     lang_list = langs.split('|')
