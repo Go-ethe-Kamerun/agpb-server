@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_migrate import Migrate
-
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -19,6 +19,8 @@ app.config['SECRET_KEY']
 # app.config['UPLOADS_DIR'] = os.getcwd() + os.environ.get('UPLOADS_DIR')
 # app.config['SERVER_ADDRESS'] = os.environ.get('SERVER_ADDRESS')
 # app.config['PLAY_AUDIO_ROUTE'] = os.environ.get('PLAY_AUDIO_ROUTE')
+
+CORS(app)
 
 config_file = 'config.yaml'
 
