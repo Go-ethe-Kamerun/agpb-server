@@ -376,4 +376,4 @@ def make_edit_api_call(edit_type, username,language,
                 revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
                 return revision_id
         except Exception as e:
-            return send_response("There seem to be an issue with " + e, 400)
+            return send_response("There seem to be an issue with " + str(e), 400)
