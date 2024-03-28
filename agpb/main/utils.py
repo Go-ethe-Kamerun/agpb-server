@@ -278,7 +278,7 @@ def get_language_qid(language):
     return None
 
 
-def upload_file(file_data, language, auth_obj, file_name):
+def upload_file(file_data, language, lang_label, auth_obj, file_name):
     csrf_token, api_auth_token = generate_csrf_token(app.config['UPLOAD_API_URL'],
                                                 auth_obj['consumer_key'],
                                                 auth_obj['consumer_secret'],
@@ -289,7 +289,7 @@ def upload_file(file_data, language, auth_obj, file_name):
     params['format'] = 'json'
     params['filename'] = file_name
     params['token'] = csrf_token
-    params['text'] = "[[Category:" + language + " pronunciation]]"
+    params['text'] = "[[Category:" + lang_label + " Pronunciation]]"
 
     response = requests.post(app.config['UPLOAD_API_URL'],
                             data=params,
@@ -300,7 +300,7 @@ def upload_file(file_data, language, auth_obj, file_name):
     return response
 
 
-def make_edit_api_call(edit_type, username,language,
+def make_edit_api_call(edit_type, username,language, lang_label,
                        data, wd_item, auth_object, file_name):
 
     csrf_token, api_auth_token = generate_csrf_token(app.config['API_URL'],
@@ -330,7 +330,7 @@ def make_edit_api_call(edit_type, username,language,
     revision_id = None
 
     if edit_type not in ['wbsetlabel', 'wbsetdescription']: # we upload a file
-        upload_response = upload_file(data, language, auth_object, file_name)
+        upload_response = upload_file(data, language,lang_label, auth_object, file_name)
 
         if upload_response.status_code != 200:
             send_response('Upload failed', 401)
@@ -351,29 +351,29 @@ def make_edit_api_call(edit_type, username,language,
         return revision_id
 
     else:
-        try:
-            # get language item here from lang_code
-            qualifier_value = get_language_qid(language)
-            qualifier_params = {}
-            qualifier_params['claim'] = claim_result['claim']['id']
-            qualifier_params['action'] = 'wbsetqualifier'
-            qualifier_params['property'] = 'P407'
-            qualifier_params['snaktype'] = 'value'
-            qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
-            qualifier_params['format'] = 'json'
-            qualifier_params['token'] = csrf_token
-            qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-            qual_response = requests.post(app.config['API_URL'],
-                                            data=qualifier_params,
-                                            auth=api_auth_token)
+        # get language item here from lang_code
+        qualifier_value = get_language_qid(language)
+        qualifier_params = {}
+        qualifier_params['claim'] = claim_result['claim']['id']
+        qualifier_params['action'] = 'wbsetqualifier'
+        qualifier_params['property'] = 'P407'
+        qualifier_params['snaktype'] = 'value'
+        qualifier_params['value'] = json.dumps({'entity-type': 'item', 'id': qualifier_value})
+        qualifier_params['format'] = 'json'
+        qualifier_params['token'] = csrf_token
+        qualifier_params['summary']  = username + '@' + app.config['APP_NAME']
 
-            qualifier_params = qual_response.json()
+        qual_response = requests.post(app.config['API_URL'],
+                                        data=qualifier_params,
+                                        auth=api_auth_token)
 
-            if qual_response.status_code != 200:
-                send_response('Qualifier could not be added', 401)
-            if 'success' in qualifier_params.keys():
-                revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
-                return revision_id
-        except Exception as e:
+        qualifier_params = qual_response.json()
+
+        if qual_response.status_code != 200:
+            send_response('Qualifier could not be added', 401)
+        if 'success' in qualifier_params.keys():
+            revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
+            return revision_id
+        else:
             return send_response("There seem to be an issue with " + str(e), 400)

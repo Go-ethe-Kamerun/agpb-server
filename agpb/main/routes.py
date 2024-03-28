@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from agpb import db, app
 import requests
 from agpb.models import Contribution, User
@@ -101,12 +101,11 @@ def postContribution(current_user, data):
     wd_item = request.form.get('wd_item')
     edit_type = request.form.get('edit_type')
     language = request.form.get('lang_code')
+    lang_label = request.form.get('lang_label')
     upload_file = request.files['data'].read() if request.files else b''
 
-    file_name = request.files['data'].filename.split('.')[0] + '.ogg' if request.files else None
+    file_name = request.files['data'].filename if request.files else None
     contrib_data = upload_file if edit_type == 'wbsetclaim' else request.form.get('data')
-
-    print('all data obtained')
 
     valid_actions = [
         'wbsetclaim',
@@ -116,12 +115,14 @@ def postContribution(current_user, data):
     print('edit_type', edit_type)
     if edit_type not in valid_actions:
         send_response('Incorrect edit type', 401)
-
-    contribution = Contribution(username=current_user.username,
-                                wd_item=wd_item,
-                                lang_code=language,
-                                edit_type=edit_type,
-                                data=file_name if edit_type == 'wbsetclaim' else request.form.get('text'))
+    try:
+        contribution = Contribution(username=current_user.username,
+                                    wd_item=wd_item,
+                                    lang_code=language,
+                                    edit_type=edit_type,
+                                    data=file_name if edit_type == 'wbsetclaim' else request.form.get('text'))
+    except Exception as e:
+        return jsonify(str(e))
 
     auth_obj = {
         "consumer_key": app.config['CONSUMER_KEY'],
@@ -130,7 +131,7 @@ def postContribution(current_user, data):
         "access_secret": data.get('access_token')['secret'],
     }
 
-    lastrevid = make_edit_api_call(edit_type, current_user.username,language,
+    lastrevid = make_edit_api_call(edit_type, current_user.username,language, lang_label,
                                     contrib_data, wd_item, auth_obj, file_name=file_name)
     
     if not lastrevid:
