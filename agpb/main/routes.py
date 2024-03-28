@@ -112,7 +112,7 @@ def postContribution(current_user, data):
         'wbsetlabel',
         'wbsetdescription'
     ]
-    print('edit_type', edit_type)
+
     if edit_type not in valid_actions:
         send_response('Incorrect edit type', 401)
     try:
@@ -120,10 +120,9 @@ def postContribution(current_user, data):
                                     wd_item=wd_item,
                                     lang_code=language,
                                     edit_type=edit_type,
-                                    data=contrib_data)
+                                    data=file_name if edit_type == 'wbsetclaim' else request.form.get('data'))
     except Exception as e:
         return jsonify(str(e))
-
     auth_obj = {
         "consumer_key": app.config['CONSUMER_KEY'],
         "consumer_secret": app.config['CONSUMER_SECRET'],
