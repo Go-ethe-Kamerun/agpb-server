@@ -120,7 +120,7 @@ def postContribution(current_user, data):
                                     wd_item=wd_item,
                                     lang_code=language,
                                     edit_type=edit_type,
-                                    data=file_name if edit_type == 'wbsetclaim' else request.form.get('text'))
+                                    data=contrib_data)
     except Exception as e:
         return jsonify(str(e))
 
