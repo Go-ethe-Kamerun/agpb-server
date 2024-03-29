@@ -278,7 +278,7 @@ def get_language_qid(language):
     return None
 
 
-def upload_file(file_data, language, lang_label, auth_obj, file_name):
+def upload_file(file_data, username, lang_label, auth_obj, file_name):
     csrf_token, api_auth_token = generate_csrf_token(app.config['UPLOAD_API_URL'],
                                                 auth_obj['consumer_key'],
                                                 auth_obj['consumer_secret'],
@@ -289,7 +289,8 @@ def upload_file(file_data, language, lang_label, auth_obj, file_name):
     params['format'] = 'json'
     params['filename'] = file_name
     params['token'] = csrf_token
-    params['text'] = "[[Category:" + lang_label + " Pronunciation]]"
+    params['text'] = "\n== {{int:license-header}} ==\n{{cc-by-sa-4.0}}\n\n[[Category:" +\
+                     lang_label + " Pronunciation]]"
 
     response = requests.post(app.config['UPLOAD_API_URL'],
                             data=params,
@@ -330,7 +331,7 @@ def make_edit_api_call(edit_type, username,language, lang_label,
     revision_id = None
 
     if edit_type not in ['wbsetlabel', 'wbsetdescription']: # we upload a file
-        upload_response = upload_file(data, language,lang_label, auth_object, file_name)
+        upload_response = upload_file(data, username,lang_label, auth_object, file_name)
 
         if upload_response.status_code != 200:
             send_response('Upload failed', 401)
