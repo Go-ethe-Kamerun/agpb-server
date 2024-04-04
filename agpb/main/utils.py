@@ -336,13 +336,11 @@ def make_edit_api_call(edit_type, username,language, lang_label,
         if upload_response.status_code != 200:
             send_response('Upload failed', 401)
 
-    try:
-        claim_response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
-    except Exception as e:
-        return jsonify(str(e))
+    claim_response = requests.post(app.config['API_URL'], data=params, auth=api_auth_token)
 
-    if claim_response.status_code != 200:
-        send_response('Unable to edit item', 401)
+    if 'error' in claim_response.json().keys():
+        return send_response(str(claim_response.json()['error']['code'].capitalize() +\
+                                ': ' + claim_response.json()['error']['info'].capitalize()), 400)
 
     claim_result = claim_response.json()
 
@@ -377,4 +375,4 @@ def make_edit_api_call(edit_type, username,language, lang_label,
             revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
             return revision_id
         else:
-            return send_response("There seem to be an issue with " + str(e), 400)
+            return send_response("There seem to be an issue with " + str(qual_response.json()['code']), 400)
