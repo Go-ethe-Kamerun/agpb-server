@@ -130,9 +130,12 @@ def get_search_data(text, lang_code):
     PARAMS = {
         "action": "wbsearchentities",
         "search": text,
+        "type": "item",
         "language": lang_code,
+        "uselang": lang_code,
         "format": "json"
     }
+
     search_data = make_api_request(app.config["API_URL"], PARAMS)
     if len(search_data["search"]) > 0:
         search_data_entries = []

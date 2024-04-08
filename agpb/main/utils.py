@@ -375,4 +375,4 @@ def make_edit_api_call(edit_type, username,language, lang_label,
             revision_id = qualifier_params.get('pageinfo').get('lastrevid', None)
             return revision_id
         else:
-            return send_response("There seem to be an issue with " + str(qual_response.json()['code']), 400)
+            return send_response("Error: " + str(qual_response.json()['error']['info'].capitalize()), 400)
