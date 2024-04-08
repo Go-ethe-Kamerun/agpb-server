@@ -20,7 +20,8 @@ def get_languages():
 def get_search_Items():
     text = request.args.get('text')
     lang_code = request.args.get('lang_code')
-    search_data = get_search_data(text, lang_code)
+    locale = request.args.get('locale', 'de')
+    search_data = get_search_data(text, lang_code, locale)
     return search_data
 
 

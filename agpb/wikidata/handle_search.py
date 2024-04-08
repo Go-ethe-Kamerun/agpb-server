@@ -126,13 +126,13 @@ def get_item_audio_data(wd_id):
     return audio_translations, image_url           
 
 
-def get_search_data(text, lang_code):
+def get_search_data(text, lang_code, locale):
     PARAMS = {
         "action": "wbsearchentities",
         "search": text,
         "type": "item",
         "language": lang_code,
-        "uselang": lang_code,
+        "uselang": locale,
         "format": "json"
     }
 
